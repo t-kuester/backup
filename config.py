@@ -15,6 +15,6 @@ import os
 USER_DIR = os.environ["HOME"]
 
 DEFAULT_TARGET_DIR = os.path.join(USER_DIR, "backup_{date}")
-DEFAULT_NAME_PATTERN = "{parent]/{date}_{dirname}"
+DEFAULT_NAME_PATTERN = "{parent}/{dirname} {date}"
 DEFAULT_ARCHIVE_TYPE = "zip"
 DEFAULT_CONFIG_LOCATION = os.path.join(USER_DIR, ".backup_conf.json")

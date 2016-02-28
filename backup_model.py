@@ -8,6 +8,8 @@ Data model for backup tool, as well as helper methods for reading/writing the
 model to JSON files.
 """
 
+# TODO makes dates in JSON file human-readable
+
 from config import *
 import json
 
@@ -15,7 +17,7 @@ class Directory:
 	"""Class representing a single directory.
 	"""
 	
-	def __init__(self, path, archive_type=None, last_backup=None, last_changed=None, include=False):
+	def __init__(self, path, archive_type=None, last_backup=0, last_changed=0, include=False):
 		self.path = path
 		self.archive_type = archive_type or DEFAULT_ARCHIVE_TYPE
 		self.last_backup = last_backup
@@ -44,7 +46,9 @@ class Configuration:
 def create_initial_config():
 	"""Create initial configuration using default values.
 	"""
-	return Configuration(DEFAULT_TARGET_DIR, DEFAULT_NAME_PATTERN)
+	config = Configuration(DEFAULT_TARGET_DIR, DEFAULT_NAME_PATTERN)
+	config.directories.append(Directory("/path/to/directory"))
+	return config
 	
 
 def load_from_json(json_location):

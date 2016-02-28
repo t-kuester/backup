@@ -8,20 +8,23 @@ Data model for backup tool, as well as helper methods for reading/writing the
 model to JSON files.
 """
 
+from config import *
+import json
+
 class Directory:
 	"""Class representing a single directory.
 	"""
 	
-	def __init__(self, path, last_backup, archive_type, last_changed=None, include=False):
+	def __init__(self, path, archive_type, last_backup=None, last_changed=None, include=False):
 		self.path = path
-		self.last_backup = last_backup
 		self.archive_type = archive_type
+		self.last_backup = last_backup
 		self.last_changed = last_changed
 		self.include = include
 		
 	def __repr__(self):
-		return "Directory({}, {}, {}, {}, {})".format(self.path, self.last_backup, 
-				self.archive_type, self.last_changed, self.include)
+		return "Directory({}, {}, {}, {}, {})".format(self.path, self.archive_type, 
+				self.last_backup, self.last_changed, self.include)
 				
 
 class Configuration:
@@ -38,12 +41,42 @@ class Configuration:
 				self.name_pattern, self.directories)
 
 
+def create_initial_config():
+	"""Create initial configuration using default values.
+	"""
+	return Configuration(DEFAULT_TARGET_DIR, DEFAULT_NAME_PATTERN)
+	
+
 def load_from_json(json_location):
 	"""Load backup configuration from JSON file.
 	"""
-	pass
+	with open(json_location, "r") as f:
+		config = json.load(f)
+		config["directories"] = [Directory(**d) for d in config["directories"]]
+		return Configuration(**config)
 	
 def write_to_json(json_location, configuration):
 	"""Store backup configuration in JSON file.
 	"""
-	pass
+	with open(json_location, "w") as f:
+		config = dict(configuration.__dict__)
+		config["directories"] = [d.__dict__ for d in config["directories"]]
+		json.dump(config, f, sort_keys=True, indent=4, separators=(',', ': '))
+
+
+def test():
+	"""Just for testing basic creation and JSON serialization.
+	"""
+	conf = create_initial_config()
+	conf.directories.extend([Directory("/path/to/foo", "zip", 1, 2), 
+	                         Directory("/path/to/bar", "tar.gz", 3, 4), 
+			                 Directory("/path/to/blub", "tar", 5, 6)])
+	write_to_json(DEFAULT_CONFIG_LOCATION, conf)
+	conf2 = load_from_json(DEFAULT_CONFIG_LOCATION)
+	print(conf)
+	print(conf2)
+	assert str(conf) == str(conf2)
+
+# testing stuff
+if __name__=="__main__":
+	test()

@@ -10,7 +10,11 @@ useful defaults etc.
 # what language file to use?
 from msg_en import *
 
-DEFAULT_TARGET_DIR = "backup_{date}"
-DEFAULT_NAME_PATTERN = "{parent]/{date}_{dir}"
+import os
+
+USER_DIR = os.environ["HOME"]
+
+DEFAULT_TARGET_DIR = os.path.join(USER_DIR, "backup_{date}")
+DEFAULT_NAME_PATTERN = "{parent]/{date}_{dirname}"
 DEFAULT_ARCHIVE_TYPE = "zip"
-DEFAULT_CONFIG_LOCATION = ".backup_conf.json"
+DEFAULT_CONFIG_LOCATION = os.path.join(USER_DIR, ".backup_conf.json")

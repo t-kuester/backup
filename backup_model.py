@@ -15,9 +15,9 @@ class Directory:
 	"""Class representing a single directory.
 	"""
 	
-	def __init__(self, path, archive_type, last_backup=None, last_changed=None, include=False):
+	def __init__(self, path, archive_type=None, last_backup=None, last_changed=None, include=False):
 		self.path = path
-		self.archive_type = archive_type
+		self.archive_type = archive_type or DEFAULT_ARCHIVE_TYPE
 		self.last_backup = last_backup
 		self.last_changed = last_changed
 		self.include = include
@@ -55,6 +55,7 @@ def load_from_json(json_location):
 		config["directories"] = [Directory(**d) for d in config["directories"]]
 		return Configuration(**config)
 	
+	
 def write_to_json(json_location, configuration):
 	"""Store backup configuration in JSON file.
 	"""
@@ -67,12 +68,13 @@ def write_to_json(json_location, configuration):
 def test():
 	"""Just for testing basic creation and JSON serialization.
 	"""
+	TEST_CONFIG = "test_config.json"
 	conf = create_initial_config()
 	conf.directories.extend([Directory("/path/to/foo", "zip", 1, 2), 
 	                         Directory("/path/to/bar", "tar.gz", 3, 4), 
 			                 Directory("/path/to/blub", "tar", 5, 6)])
-	write_to_json(DEFAULT_CONFIG_LOCATION, conf)
-	conf2 = load_from_json(DEFAULT_CONFIG_LOCATION)
+	write_to_json(TEST_CONFIG, conf)
+	conf2 = load_from_json(TEST_CONFIG)
 	print(conf)
 	print(conf2)
 	assert str(conf) == str(conf2)

@@ -11,6 +11,7 @@ by Tobias Küster, 2016
 
 import tkinter
 import backup_model, config
+import os
 
 
 class BackupFrame(tkinter.Frame):
@@ -31,26 +32,34 @@ class BackupFrame(tkinter.Frame):
 		tkinter.Label(self, text="Name Pattern").grid(row=2, column=0)
 		tkinter.Entry(self, textvariable=self.pattern).grid(row=2, column=1)
 		
-		# Buttons: Add Directory, create Backup
-		tkinter.Button(self, text="Add Directory", command=self.add_directory).grid(row=3, column=0)
-		tkinter.Button(self, text="Create Backup", command=self.create_backup).grid(row=3, column=1)
+		# Buttons: Add/Remove Directory
+		tkinter.Button(self, text="Add Directory", command=self.add_directory).grid(row=3, column=0, sticky="EW")
+		tkinter.Button(self, text="Remove Directory", command=self.remove_directory).grid(row=3, column=1, sticky="EW")
 		
-		# Info and Config Component for each Directory
-		for i, d in enumerate(self.config.directories):
-			print(d)
-			# list of directories: name, last backup, size, changed
-			# checkbuttons: include, compress, button: remove
-			panel = DirectoryPanel(self)
-			panel.grid(row=4+i, column=0, columnspan=2, sticky="EW")
-			panel.set_directory(d)
+		# Optionmenu with directories in the config
+		self.selected = tkinter.StringVar()
+		self.selected.trace("w", self.update_selected)
+		self.directories = tkinter.OptionMenu(self, self.selected, *(d.path for d in self.config.directories))
+		self.directories.grid(row=4, column=0, columnspan=2, sticky="EW")
 		
-	
+		# DirectoryPanel showing the selected directory
+		self.panel = DirectoryPanel(self)
+		self.panel.grid(row=5, column=0, columnspan=2, sticky="EW")
+
+		# Button: Make Backup
+		tkinter.Button(self, text="Create Backup", command=self.create_backup).grid(row=6, column=0, columnspan=2, sticky="EW")
+
+	def update_selected(self, *args):
+		p = self.selected.get()
+		d = next(d for d in self.config.directories if d.path == p)
+		self.panel.set_directory(d)
+
 	def add_directory(self):
 		print("adding direcory")
-		
-	def remove_directory(self, selected):
-		print("remove dir", selected)
-	
+
+	def remove_directory(self):
+		print("remove directory")
+
 	def create_backup(self):
 		print("creating backup...")
 
@@ -58,17 +67,20 @@ class BackupFrame(tkinter.Frame):
 class DirectoryPanel(tkinter.Canvas):
 
 	def __init__(self, *args, **kwargs):
-		tkinter.Canvas.__init__(self, *args, **kwargs)
+		super().__init__(*args, **kwargs)
 
 		self.pathvar = tkinter.StringVar()
 		self.backupvar = tkinter.StringVar()
 		self.changevar = tkinter.StringVar()
 		self.includevar = tkinter.IntVar()
 
-		self.make_entry("Path", 0, tkinter.Entry(self, textvariable=self.pathvar, validate="key", validatecommand=self.update_path))
+		self.pathvar.trace("w", self.update_path)
+		self.includevar.trace("w", self.update_include)
+
+		self.make_entry("Path", 0, tkinter.Entry(self, textvariable=self.pathvar))
 		self.make_entry("Last Backup", 1, tkinter.Label(self, textvariable=self.backupvar))
 		self.make_entry("Last Change", 2, tkinter.Label(self, textvariable=self.changevar))
-		self.make_entry(None, 3, tkinter.Checkbutton(self, text="Include?", variable=self.includevar, command=self.update_include))
+		self.make_entry(None, 3, tkinter.Checkbutton(self, text="Include?", variable=self.includevar))
 		# TODO archive type
 
 	def make_entry(self, label, row, widget):
@@ -82,10 +94,10 @@ class DirectoryPanel(tkinter.Canvas):
 		self.changevar.set(directory.last_changed)
 		self.includevar.set(directory.include)
 
-	def update_path(self):
+	def update_path(self, *args):
 		self.directory.path = self.pathvar.get()
 
-	def update_include(self):
+	def update_include(self, *args):
 		self.directory.include = bool(self.includevar.get())
 
 

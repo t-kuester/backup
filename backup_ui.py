@@ -36,10 +36,13 @@ class BackupFrame(tkinter.Frame):
 		tkinter.Button(self, text="Create Backup", command=self.create_backup).grid(row=3, column=1)
 		
 		# Info and Config Component for each Directory
-		for d in self.config.directories:
+		for i, d in enumerate(self.config.directories):
 			print(d)
 			# list of directories: name, last backup, size, changed
 			# checkbuttons: include, compress, button: remove
+			panel = DirectoryPanel(self)
+			panel.grid(row=4+i, column=0, columnspan=2, sticky="EW")
+			panel.set_directory(d)
 		
 	
 	def add_directory(self):
@@ -50,7 +53,37 @@ class BackupFrame(tkinter.Frame):
 	
 	def create_backup(self):
 		print("creating backup...")
-		
+
+
+class DirectoryPanel(tkinter.Canvas):
+
+	def __init__(self, *args, **kwargs):
+		tkinter.Canvas.__init__(self, *args, **kwargs)
+
+		self.pathvar = tkinter.StringVar()
+		self.backupvar = tkinter.StringVar()
+		self.changevar = tkinter.StringVar()
+		self.includevar = tkinter.IntVar()
+
+		self.make_entry("Path", 0, tkinter.Entry(self, textvariable=self.pathvar))
+		self.make_entry("Last Backup", 1, tkinter.Label(self, textvariable=self.backupvar))
+		self.make_entry("Last Change", 2, tkinter.Label(self, textvariable=self.changevar))
+		self.make_entry(None, 3, tkinter.Checkbutton(self, text="Include?", variable=self.includevar))
+		# TODO archive type
+
+	def make_entry(self, label, row, widget):
+		tkinter.Label(self, text=label).grid(row=row, column=0, sticky="NW")
+		widget.grid(row=row, column=1, sticky="W")
+
+	def set_directory(self, directory):
+		self.directory = directory
+		self.pathvar.set(directory.path)
+		self.backupvar.set(directory.last_backup)
+		self.changevar.set(directory.last_changed)
+		self.includevar.set(directory.include)
+		# TODO update widgets
+
+	# TODO callback for updating directory object
 
 
 if __name__ == "__main__":
@@ -65,7 +98,7 @@ if __name__ == "__main__":
 	conf.target_dir = frame.target.get()
 	conf.name_pattern = frame.pattern.get()
 	
+	# TODO use with or try/except/finally to ensure writing to file
 	print("writing config...")
 	backup_model.write_to_json(config_file, conf)
 	print("done")
-

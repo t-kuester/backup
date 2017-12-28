@@ -65,10 +65,10 @@ class DirectoryPanel(tkinter.Canvas):
 		self.changevar = tkinter.StringVar()
 		self.includevar = tkinter.IntVar()
 
-		self.make_entry("Path", 0, tkinter.Entry(self, textvariable=self.pathvar))
+		self.make_entry("Path", 0, tkinter.Entry(self, textvariable=self.pathvar, validate="key", validatecommand=self.update_path))
 		self.make_entry("Last Backup", 1, tkinter.Label(self, textvariable=self.backupvar))
 		self.make_entry("Last Change", 2, tkinter.Label(self, textvariable=self.changevar))
-		self.make_entry(None, 3, tkinter.Checkbutton(self, text="Include?", variable=self.includevar))
+		self.make_entry(None, 3, tkinter.Checkbutton(self, text="Include?", variable=self.includevar, command=self.update_include))
 		# TODO archive type
 
 	def make_entry(self, label, row, widget):
@@ -81,9 +81,12 @@ class DirectoryPanel(tkinter.Canvas):
 		self.backupvar.set(directory.last_backup)
 		self.changevar.set(directory.last_changed)
 		self.includevar.set(directory.include)
-		# TODO update widgets
 
-	# TODO callback for updating directory object
+	def update_path(self):
+		self.directory.path = self.pathvar.get()
+
+	def update_include(self):
+		self.directory.include = bool(self.includevar.get())
 
 
 if __name__ == "__main__":

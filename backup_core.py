@@ -45,8 +45,18 @@ def determine_include(directory):
 	backup, change = directory.last_backup, directory.last_changed
 	directory.include = bool(not (backup and change) or backup < change)
 	return directory.include
-	
-	
+
+
+def calculate_includes(config):
+	"""Determine time of last change and consequently whether to include
+	each directory of the given backup configuration.
+	"""
+	for directory in config.directories:
+		determine_last_changes(directory)
+		inc = determine_include(directory)
+		print("including", directory.path, inc)
+
+
 def perform_backup(config):
 	"""Perform the backup, creating archive files of all directories to be
 	included in the backup and moving those archives to the appointed target.
@@ -77,29 +87,29 @@ def backup_directory(directory, name_pattern, target_dir):
 	archive_actions = {TYPE_ZIP: create_zip, TYPE_TAR: create_tar}
 	archive = archive_actions[directory.archive_type](filename, directory.path)
 	# move archive file to target directory
-	shutil.move(filename, target_dir)
+	shutil.move(archive, target_dir)
 
 
 def create_zip(filename, to_compress):
 	"""Create zip file using given filename containing the directory to_compress
 	and all of its files.
 	"""
-	zip_file = zipfile.ZipFile(filename, mode="w")
+	zip_file = zipfile.ZipFile(filename + ".zip", mode="w")
 	for filepath in all_files(to_compress):
 		zip_file.write(filepath)
 	zip_file.close()
-	return zip_file
+	return filename + ".zip"
 	
 	
 def create_tar(filename, to_compress):
 	"""Create tar file using given filename containing the directory to_compress
 	and all of its files.
 	"""
-	tar_file = tarfile.TarFile(filename, mode="w")
+	tar_file = tarfile.TarFile(filename + ".tar", mode="w")
 	for filepath in all_files(to_compress):
 		tar_file.add(filepath)
 	tar_file.close()
-	return tar_file
+	return filename + ".tar"
 
 
 def all_files(path):
@@ -138,9 +148,7 @@ def main():
 		print("last changed", directory, time.ctime(d))
 	
 	if auto_include:
-		for directory in config.directories:
-			inc = determine_include(directory)
-			print("including", directory, inc)
+		calculate_includes(config)
 	
 	perform_backup(config)
 	

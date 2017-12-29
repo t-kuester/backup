@@ -49,16 +49,31 @@ class BackupFrame(tkinter.Frame):
 		# Button: Make Backup
 		tkinter.Button(self, text="Create Backup", command=self.create_backup).grid(row=6, column=0, columnspan=2, sticky="EW")
 
-	def update_selected(self, *args):
+	def get_selected(self):
 		p = self.selected.get()
-		d = next(d for d in self.config.directories if d.path == p)
-		self.panel.set_directory(d)
+		return next((d for d in self.config.directories if d.path == p), None)
+
+	def update_options(self):
+		# ugly hack: https://stackoverflow.com/a/19795103/1639625
+		menu = self.directories.children["menu"]
+		menu.delete(0, "end")
+		for d in (d.path for d in self.config.directories):
+			menu.add_command(label=d, command=lambda v=d: self.selected.set(v))
+
+	def update_selected(self, *args):
+		self.panel.set_directory(self.get_selected())
 
 	def add_directory(self):
 		print("adding direcory")
+		self.config.directories.append(backup_model.Directory(""))
+		self.update_options()
 
 	def remove_directory(self):
 		print("remove directory")
+		d = self.get_selected()
+		if d:
+			self.config.directories.remove(d)
+			self.update_options()
 
 	def create_backup(self):
 		print("creating backup...")
@@ -89,10 +104,10 @@ class DirectoryPanel(tkinter.Canvas):
 
 	def set_directory(self, directory):
 		self.directory = directory
-		self.pathvar.set(directory.path)
-		self.backupvar.set(directory.last_backup)
-		self.changevar.set(directory.last_changed)
-		self.includevar.set(directory.include)
+		self.pathvar.set(directory.path if directory else "")
+		self.backupvar.set(directory.last_backup if directory else "")
+		self.changevar.set(directory.last_changed if directory else "")
+		self.includevar.set(directory.include if directory else False)
 
 	def update_path(self, *args):
 		self.directory.path = self.pathvar.get()

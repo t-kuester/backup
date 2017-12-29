@@ -64,16 +64,17 @@ class BackupFrame(tkinter.Frame):
 		self.panel.set_directory(self.get_selected())
 
 	def add_directory(self):
-		print("adding direcory")
-		self.config.directories.append(backup_model.Directory(""))
+		d = backup_model.Directory("/path/to/directory")
+		self.config.directories.append(d)
 		self.update_options()
+		self.selected.set(d.path)
 
 	def remove_directory(self):
-		print("remove directory")
 		d = self.get_selected()
 		if d:
 			self.config.directories.remove(d)
 			self.update_options()
+			self.selected.set(next((d.path for d in self.config.directories), None))
 
 	def create_backup(self):
 		print("creating backup...")
@@ -110,17 +111,19 @@ class DirectoryPanel(tkinter.Canvas):
 		self.includevar.set(directory.include if directory else False)
 
 	def update_path(self, *args):
-		self.directory.path = self.pathvar.get()
+		if self.directory:
+			self.directory.path = self.pathvar.get()
 
 	def update_include(self, *args):
-		self.directory.include = bool(self.includevar.get())
+		if self.directory:
+			self.directory.include = bool(self.includevar.get())
 
 
 if __name__ == "__main__":
 	# TODO get config file from params or use default
 	config_file = config.DEFAULT_CONFIG_LOCATION
 	conf = backup_model.load_from_json(config_file)
-	print(conf)
+
 	root = tkinter.Tk()
 	frame = BackupFrame(root, conf)
 	root.mainloop()
@@ -129,6 +132,7 @@ if __name__ == "__main__":
 	conf.name_pattern = frame.pattern.get()
 	
 	# TODO use with or try/except/finally to ensure writing to file
-	print("writing config...")
-	backup_model.write_to_json(config_file, conf)
-	print("done")
+	# XXX for testing: do not write
+	# print("writing config...")
+	# backup_model.write_to_json(config_file, conf)
+	# print("done")

@@ -17,7 +17,7 @@ class Directory:
 	"""Class representing a single directory.
 	"""
 	
-	def __init__(self, path, archive_type=None, last_backup=0, last_changed=0, include=False):
+	def __init__(self, path, archive_type=None, last_backup=None, last_changed=None, include=False):
 		self.path = path
 		self.archive_type = archive_type or DEFAULT_ARCHIVE_TYPE
 		self.last_backup = last_backup

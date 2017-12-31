@@ -18,3 +18,4 @@ DEFAULT_TARGET_DIR = os.path.join(USER_DIR, "backup_{date}")
 DEFAULT_NAME_PATTERN = "{parent}/{dirname} {date}"
 DEFAULT_ARCHIVE_TYPE = "zip"
 DEFAULT_CONFIG_LOCATION = os.path.join(USER_DIR, ".backup_conf.json")
+DATE_FORMAT = "%Y-%m-%d %H:%M:%S"

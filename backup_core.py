@@ -12,7 +12,7 @@ import os
 import shutil
 import zipfile
 import tarfile
-import time
+from datetime import datetime
 
 from config import *
 import backup_model
@@ -34,8 +34,8 @@ def determine_last_changes(directory):
 			changed = os.path.getmtime(full_path)
 			last_changed = max(last_changed, changed)
 
-	directory.last_changed = last_changed
-	return last_changed
+	directory.last_changed = datetime.fromtimestamp(last_changed).strftime(DATE_FORMAT)
+	return directory.last_changed
 	
 	
 def determine_include(directory):
@@ -69,7 +69,7 @@ def perform_backup(config):
 		if directory.include:
 			print("Backing up", directory)
 			backup_directory(directory, config.name_pattern, target_dir)
-			directory.last_backup = time.time()
+			directory.last_backup = datetime.now().strftime(DATE_FORMAT)
 		else:
 			print("skipping", directory)
 
@@ -121,7 +121,7 @@ def all_files(path):
 def get_date():
 	"""Get uniformly formatted current date.
 	"""
-	return time.strftime("%Y-%m-%d", time.localtime())
+	return datetime.now().strftime("%Y-%m-%d")
 
 
 def main():
@@ -145,7 +145,7 @@ def main():
 
 	for directory in config.directories:
 		d = determine_last_changes(directory)
-		print("last changed", directory, time.ctime(d))
+		print("last changed", directory, d)
 	
 	if auto_include:
 		calculate_includes(config)

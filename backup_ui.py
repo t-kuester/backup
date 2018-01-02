@@ -64,10 +64,12 @@ class BackupFrame(tkinter.Frame):
 		self.panel.set_directory(self.get_selected())
 
 	def add_directory(self):
-		d = backup_model.Directory("/path/to/directory")
-		self.config.directories.append(d)
-		self.update_options()
-		self.selected.set(d.path)
+		path = tkinter.filedialog.askdirectory(initialdir=config.USER_DIR)
+		if path:
+			d = backup_model.Directory(path)
+			self.config.directories.append(d)
+			self.update_options()
+			self.selected.set(d.path)
 
 	def remove_directory(self):
 		d = self.get_selected()

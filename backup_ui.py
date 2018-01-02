@@ -9,8 +9,8 @@ by Tobias Küster, 2016
 - global options: target directory, add/remove directory, file name patterns
 """
 
-import tkinter
-import backup_model, config
+import tkinter, tkinter.messagebox, tkinter.filedialog
+import backup_core, backup_model, config
 import os
 
 
@@ -77,7 +77,13 @@ class BackupFrame(tkinter.Frame):
 			self.selected.set(next((d.path for d in self.config.directories), None))
 
 	def create_backup(self):
-		print("creating backup...")
+		if tkinter.messagebox.askokcancel("Backup", "Create Backup?"):
+			print("creating backup...")
+			try:
+				backup_core.perform_backup(self.config)
+				tkinter.messagebox.showinfo("Backup", "Backup finished; see log for details")
+			except Exception as ex:
+				tkinter.messagebox.showerror("Backup", "Error: %r; see log for details" % ex)
 
 
 class DirectoryPanel(tkinter.Canvas):
@@ -129,6 +135,7 @@ if __name__ == "__main__":
 
 	root = tkinter.Tk()
 	frame = BackupFrame(root, conf)
+	root.title("Backup")
 	root.mainloop()
 
 	conf.target_dir = frame.target.get()

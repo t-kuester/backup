@@ -98,19 +98,23 @@ class DirectoryPanel(tkinter.Canvas):
 
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
+		self.directory = None
 
 		self.pathvar = tkinter.StringVar()
 		self.backupvar = tkinter.StringVar()
 		self.changevar = tkinter.StringVar()
 		self.includevar = tkinter.IntVar()
+		self.typevar = tkinter.StringVar()
 
 		self.pathvar.trace("w", self.update_path)
 		self.includevar.trace("w", self.update_include)
+		self.typevar.trace("w", self.update_type)
 
 		self.make_entry("Path", 0, tkinter.Entry(self, textvariable=self.pathvar))
 		self.make_entry("Last Backup", 1, tkinter.Label(self, textvariable=self.backupvar))
 		self.make_entry("Last Change", 2, tkinter.Label(self, textvariable=self.changevar))
 		self.make_entry(None, 3, tkinter.Checkbutton(self, text="Include?", variable=self.includevar))
+		self.make_entry("Type", 4, tkinter.OptionMenu(self, self.typevar, *backup_core.KNOWN_TYPES))
 		# TODO archive type
 
 	def make_entry(self, label, row, widget):
@@ -123,6 +127,7 @@ class DirectoryPanel(tkinter.Canvas):
 		self.backupvar.set(directory.last_backup if directory else "")
 		self.changevar.set(directory.last_changed if directory else "")
 		self.includevar.set(directory.include if directory else False)
+		self.typevar.set(directory.archive_type if directory else None)
 
 	def update_path(self, *args):
 		if self.directory:
@@ -131,6 +136,10 @@ class DirectoryPanel(tkinter.Canvas):
 	def update_include(self, *args):
 		if self.directory:
 			self.directory.include = bool(self.includevar.get())
+
+	def update_type(self, *args):
+		if self.directory:
+			self.directory.archive_type = self.typevar.get()
 
 
 if __name__ == "__main__":
@@ -150,7 +159,6 @@ if __name__ == "__main__":
 	conf.name_pattern = frame.pattern.get()
 	
 	# TODO use with or try/except/finally to ensure writing to file
-	# XXX for testing: do not write
-	# print("writing config...")
-	# backup_model.write_to_json(config_file, conf)
-	# print("done")
+	print("writing config...")
+	backup_model.write_to_json(config_file, conf)
+	print("done")

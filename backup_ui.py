@@ -122,7 +122,10 @@ class DirectoryPanel(tkinter.Canvas):
 if __name__ == "__main__":
 	# TODO get config file from params or use default
 	config_file = config.DEFAULT_CONFIG_LOCATION
-	conf = backup_model.load_from_json(config_file)
+	try:
+		conf = backup_model.load_from_json(config_file)
+	except IOError:
+		conf = backup_model.create_initial_config()
 
 	root = tkinter.Tk()
 	frame = BackupFrame(root, conf)

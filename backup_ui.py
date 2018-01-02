@@ -46,8 +46,9 @@ class BackupFrame(tkinter.Frame):
 		self.panel = DirectoryPanel(self)
 		self.panel.grid(row=5, column=0, columnspan=2, sticky="EW")
 
-		# Button: Make Backup
-		tkinter.Button(self, text="Create Backup", command=self.create_backup).grid(row=6, column=0, columnspan=2, sticky="EW")
+		# Buttons: Auto-Include, Make Backup
+		tkinter.Button(self, text="Auto-Include", command=self.auto_include).grid(row=6, column=0)
+		tkinter.Button(self, text="Create Backup", command=self.create_backup).grid(row=6, column=1)
 
 	def get_selected(self):
 		p = self.selected.get()
@@ -78,6 +79,10 @@ class BackupFrame(tkinter.Frame):
 			self.update_options()
 			self.selected.set(next((d.path for d in self.config.directories), None))
 
+	def auto_include(self):
+		backup_core.calculate_includes(self.config)
+		self.update_selected()
+
 	def create_backup(self):
 		if tkinter.messagebox.askokcancel("Backup", "Create Backup?"):
 			print("creating backup...")
@@ -86,6 +91,7 @@ class BackupFrame(tkinter.Frame):
 				tkinter.messagebox.showinfo("Backup", "Backup finished; see log for details")
 			except Exception as ex:
 				tkinter.messagebox.showerror("Backup", "Error: %r; see log for details" % ex)
+			self.update_selected()
 
 
 class DirectoryPanel(tkinter.Canvas):

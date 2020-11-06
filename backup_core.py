@@ -14,11 +14,10 @@ import zipfile
 import tarfile
 from datetime import datetime
 
-from config import *
 import backup_model
 
-#TODO use proper logging instead of output to stdout
 
+DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 TYPE_ZIP = "zip"
 TYPE_TAR = "tar"
 KNOWN_TYPES = (TYPE_ZIP, TYPE_TAR)
@@ -131,28 +130,16 @@ def main():
 	- perform backup
 	- save updated config
 	"""
+	import config
 	
-	#TODO get config location from parameters
-	config_location = DEFAULT_CONFIG_LOCATION
-	
-	#TODO get auto-include from parameters
-	auto_include = True
-	
-	if os.path.isfile(config_location):
-		config = backup_model.load_from_json(config_location)
-	else:
-		config = backup_model.create_initial_config()
-
-	for directory in config.directories:
-		d = determine_last_changes(directory)
-		print("last changed", directory, d)
-	
-	if auto_include:
-		calculate_includes(config)
-	
-	perform_backup(config)
-	
-	backup_model.write_to_json(config_location, config)
+	with config.open_config(config.CONFIG_FILE) as conf:
+		
+		for directory in conf.directories:
+			d = determine_last_changes(directory)
+			print("last changed", directory, d)
+		
+		calculate_includes(conf)
+		perform_backup(conf)
 	
 	print("Done.")
 	

@@ -8,18 +8,16 @@ Data model for backup tool, as well as helper methods for reading/writing the
 model to JSON files.
 """
 
-# TODO makes dates in JSON file human-readable
-
-from config import *
 import json
+
 
 class Directory:
 	"""Class representing a single directory.
 	"""
 	
-	def __init__(self, path, archive_type=None, last_backup=None, last_changed=None, include=False):
+	def __init__(self, path, archive_type, last_backup=None, last_changed=None, include=False):
 		self.path = path
-		self.archive_type = archive_type or DEFAULT_ARCHIVE_TYPE
+		self.archive_type = archive_type
 		self.last_backup = last_backup
 		self.last_changed = last_changed
 		self.include = include
@@ -43,46 +41,38 @@ class Configuration:
 				self.name_pattern, self.directories)
 
 
-def create_initial_config():
-	"""Create initial configuration using default values.
+def load_from_json(json_string: str) -> Configuration:
+	"""Load backup configuration from JSON string.
 	"""
-	config = Configuration(DEFAULT_TARGET_DIR, DEFAULT_NAME_PATTERN)
-	config.directories.append(Directory("/path/to/directory"))
-	return config
-	
-
-def load_from_json(json_location):
-	"""Load backup configuration from JSON file.
-	"""
-	with open(json_location, "r") as f:
-		config = json.load(f)
-		config["directories"] = [Directory(**d) for d in config["directories"]]
-		return Configuration(**config)
+	config = json.loads(json_string)
+	config["directories"] = [Directory(**d) for d in config["directories"]]
+	return Configuration(**config)
 	
 	
-def write_to_json(json_location, configuration):
+def write_to_json(configuration: Configuration) -> str:
 	"""Store backup configuration in JSON file.
 	"""
-	with open(json_location, "w") as f:
-		config = dict(configuration.__dict__)
-		config["directories"] = [d.__dict__ for d in config["directories"]]
-		json.dump(config, f, sort_keys=True, indent=4, separators=(',', ': '))
+	config = dict(configuration.__dict__)
+	config["directories"] = [d.__dict__ for d in config["directories"]]
+	return json.dumps(config, sort_keys=True, indent=4, separators=(',', ': '))
 
+
+# TESTING
 
 def test():
 	"""Just for testing basic creation and JSON serialization.
 	"""
-	TEST_CONFIG = "test_config.json"
-	conf = create_initial_config()
+	conf = Configuration("target-dir", "name-pattern")
 	conf.directories.extend([Directory("/path/to/foo", "zip", 1, 2), 
 	                         Directory("/path/to/bar", "tar.gz", 3, 4), 
 			                 Directory("/path/to/blub", "tar", 5, 6)])
-	write_to_json(TEST_CONFIG, conf)
-	conf2 = load_from_json(TEST_CONFIG)
+	string = write_to_json(conf)
+	conf2 = load_from_json(string)
 	print(conf)
 	print(conf2)
 	assert str(conf) == str(conf2)
+	assert string == write_to_json(conf2)
 
-# testing stuff
+
 if __name__=="__main__":
 	test()

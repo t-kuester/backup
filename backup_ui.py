@@ -142,23 +142,17 @@ class DirectoryPanel(tkinter.Canvas):
 			self.directory.archive_type = self.typevar.get()
 
 
+def main():
+	with config.open_config(config.CONFIG_FILE) as conf:
+		root = tkinter.Tk()
+		frame = BackupFrame(root, conf)
+		root.title("Backup")
+		root.mainloop()
+
+		# TODO sync here or update directly?
+		conf.target_dir = frame.target.get()
+		conf.name_pattern = frame.pattern.get()
+
+
 if __name__ == "__main__":
-	# TODO get config file from params or use default
-	config_file = config.DEFAULT_CONFIG_LOCATION
-	try:
-		conf = backup_model.load_from_json(config_file)
-	except IOError:
-		conf = backup_model.create_initial_config()
-
-	root = tkinter.Tk()
-	frame = BackupFrame(root, conf)
-	root.title("Backup")
-	root.mainloop()
-
-	conf.target_dir = frame.target.get()
-	conf.name_pattern = frame.pattern.get()
-	
-	# TODO use with or try/except/finally to ensure writing to file
-	print("writing config...")
-	backup_model.write_to_json(config_file, conf)
-	print("done")
+	main()

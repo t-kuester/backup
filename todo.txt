@@ -5,7 +5,6 @@ CORE
 - ... or make directory.include an enum of "yes/no/auto"
 - problems with name-pattern and target dir?
 - exception if backup archive already exists
-- recognize and expand "~" in target path
 
 UI
 - simplify cell renderer creation code

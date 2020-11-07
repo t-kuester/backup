@@ -62,6 +62,8 @@ def perform_backup(config: Configuration):
 	included in the backup and moving those archives to the appointed target.
 	"""
 	target_dir = config.target_dir.format(date=get_date())
+	if target_dir.startswith("~"):
+		target_dir = os.environ["HOME"] + target_dir[1:]
 	print("Target dir is", target_dir)
 	if not os.path.isdir(target_dir):
 		os.makedirs(target_dir)

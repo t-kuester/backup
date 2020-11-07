@@ -28,13 +28,9 @@ def determine_last_changes(directory: Directory) -> str:
 	"""Determine when has been the last time any of the files in the given
 	directory have been changed.
 	"""
-	last_changed = 0
-	for subdir, _, files in os.walk(directory.path):
-		for filename in files:
-			full_path = os.path.join(subdir, filename)
-			changed = os.path.getmtime(full_path)
-			last_changed = max(last_changed, changed)
-
+	last_changed = max(os.path.getmtime(os.path.join(subdir, filename))
+	                   for subdir, _, files in os.walk(directory.path)
+	                   for filename in files)
 	directory.last_changed = datetime.fromtimestamp(last_changed).strftime(DATE_FORMAT)
 	return directory.last_changed
 	

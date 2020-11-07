@@ -41,6 +41,7 @@ class BackupFrame:
 		header.pack_start(self.target, True, True, 0)
 		header.pack_start(Gtk.Label(label="Pattern"), False, False, 10)
 		header.pack_start(self.pattern, True, True, 0)
+		header.pack_end(create_button("Backup!", self.do_backup, "Create Backup of Selected Directories", False), False, False, 0)
 		header.pack_end(create_button("list-remove", self.do_remove, "Mark selected for Removal"), False, False, 0)
 		header.pack_end(create_button("list-add", self.do_add, "Add new Entry"), False, False, 0)
 		
@@ -82,15 +83,18 @@ class BackupFrame:
 	def do_remove(self, widget):
 		""" Callback for removing the selected Directory entry
 		"""
-		_, it = self.select.get_selected()  # need unfiltered iter!
+		_, it = self.select.get_selected()
 		if it is not None and ask_dialog(self.window, "Remove Directory?"):
-			it = self.store_filter.convert_iter_to_child_iter(it)
-			vals = self.store[it]
-			vals[IDX_DEL] ^= True
+			self.store.remove(it)
 
 	def do_backup(self, widget):
 		self.update_conf()
-		pass
+		if ask_dialog(self.window, "Create Backup?"):
+			try:
+				backup_core.perform_backup(self.conf)
+				print("Done")
+			except Exception as ex:
+				print("Error", ex)
 	
 	def create_table(self):
 		""" Create list model and filter model and populate with Directories,
@@ -106,7 +110,7 @@ class BackupFrame:
 		
 		for i, att in enumerate(["Path", "Type", "Last Backup", "Last Change", "Include?"]):
 			renderer = Gtk.CellRendererText() if i != 4 else Gtk.CellRendererToggle()
-			if i < 2:
+			if i == 1:
 				def edit_func(widget, path, text, i=i):
 					self.store[path][i] = text
 				renderer.set_property("editable", True)
@@ -120,6 +124,7 @@ class BackupFrame:
 			column = Gtk.TreeViewColumn(att, renderer, active=i) if i == 4 else \
 			         Gtk.TreeViewColumn(att, renderer, text=i)
 			column.set_sort_column_id(i)
+			column.set_expand(i == 0)
 			self.table.append_column(column)
 	
 		

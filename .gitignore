@@ -1,0 +1,4 @@
+__pycache__
+*.pyc
+*.geany
+test_config.json

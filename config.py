@@ -4,7 +4,8 @@
 by Tobias Küster, 2016
 
 This file contains some variables for global configuration, such as some
-useful defaults etc.
+useful defaults etc., as well as code for reading and writing the configuration
+files to the ~/.config directory.
 """
 
 import os

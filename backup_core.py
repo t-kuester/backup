@@ -13,8 +13,10 @@ import shutil
 import zipfile
 import tarfile
 from datetime import datetime
+from typing import Iterable
 
 import backup_model
+from backup_model import Directory, Configuration
 
 
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
@@ -22,7 +24,7 @@ TYPE_ZIP = "zip"
 TYPE_TAR = "tar"
 KNOWN_TYPES = (TYPE_ZIP, TYPE_TAR)
 
-def determine_last_changes(directory):
+def determine_last_changes(directory: Directory) -> str:
 	"""Determine when has been the last time any of the files in the given
 	directory have been changed.
 	"""
@@ -37,7 +39,7 @@ def determine_last_changes(directory):
 	return directory.last_changed
 	
 	
-def determine_include(directory):
+def determine_include(directory: Directory) -> bool:
 	"""Determine whether to include the given directory in the next backup,
 	based on the time of the last backup and the time of the last change.
 	"""
@@ -46,7 +48,7 @@ def determine_include(directory):
 	return directory.include
 
 
-def calculate_includes(config):
+def calculate_includes(config: Configuration):
 	"""Determine time of last change and consequently whether to include
 	each directory of the given backup configuration.
 	"""
@@ -56,7 +58,7 @@ def calculate_includes(config):
 		print("including", directory.path, inc)
 
 
-def perform_backup(config):
+def perform_backup(config: Configuration):
 	"""Perform the backup, creating archive files of all directories to be
 	included in the backup and moving those archives to the appointed target.
 	"""
@@ -73,7 +75,7 @@ def perform_backup(config):
 			print("skipping", directory)
 
 
-def backup_directory(directory, name_pattern, target_dir):
+def backup_directory(directory: Directory, name_pattern: str, target_dir: str):
 	"""Perform the backup for a single directory and move the resulting archive
 	to the given target directory.
 	"""
@@ -89,7 +91,7 @@ def backup_directory(directory, name_pattern, target_dir):
 	shutil.move(archive, target_dir)
 
 
-def create_zip(filename, to_compress):
+def create_zip(filename: str, to_compress: str) -> str:
 	"""Create zip file using given filename containing the directory to_compress
 	and all of its files.
 	"""
@@ -100,7 +102,7 @@ def create_zip(filename, to_compress):
 	return filename + ".zip"
 	
 	
-def create_tar(filename, to_compress):
+def create_tar(filename: str, to_compress: str) -> str:
 	"""Create tar file using given filename containing the directory to_compress
 	and all of its files.
 	"""
@@ -111,13 +113,13 @@ def create_tar(filename, to_compress):
 	return filename + ".tar"
 
 
-def all_files(path):
+def all_files(path: str) -> Iterable[str]:
 	"""Generate all files in a given directory.
 	"""
 	return (os.path.join(d, f) for d, _, fs in os.walk(path) for f in fs)
 
 
-def get_date():
+def get_date() -> str:
 	"""Get uniformly formatted current date.
 	"""
 	return datetime.now().strftime("%Y-%m-%d")

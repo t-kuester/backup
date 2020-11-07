@@ -23,7 +23,7 @@ class Directory:
 		self.include = include
 		
 	def __repr__(self):
-		return "Directory({}, {}, {}, {}, {})".format(self.path, self.archive_type, 
+		return "Directory(%r, %r, %r, %r, %r)" % (self.path, self.archive_type, 
 				self.last_backup, self.last_changed, self.include)
 				
 
@@ -37,7 +37,7 @@ class Configuration:
 		self.directories = directories or []
 		
 	def __repr__(self):
-		return "Configuration({}, {}, {})".format(self.target_dir, 
+		return "Configuration(%r, %r, %r)" % (self.target_dir, 
 				self.name_pattern, self.directories)
 
 

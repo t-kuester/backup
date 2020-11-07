@@ -116,10 +116,11 @@ class BackupFrame:
 					self.store[path][i] ^= True
 				renderer.set_property("activatable", True)
 				renderer.connect("toggled", toggle_func)
-			if i < 4:
-				self.table.append_column(Gtk.TreeViewColumn(att, renderer, text=i))
-			else:
-				self.table.append_column(Gtk.TreeViewColumn(att, renderer, active=i))
+				
+			column = Gtk.TreeViewColumn(att, renderer, active=i) if i == 4 else \
+			         Gtk.TreeViewColumn(att, renderer, text=i)
+			column.set_sort_column_id(i)
+			self.table.append_column(column)
 	
 		
 def create_button(title, command, tooltip=None, is_icon=True):

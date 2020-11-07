@@ -68,6 +68,14 @@ class BackupFrame:
 		self.conf.name_pattern = self.pattern.get_text()
 		self.conf.directories = [backup_model.Directory(*vals) for vals in self.store]
 		
+	def update_table(self):	
+		"""Update table view from configuration, e.g. after updating the dates.
+		"""
+		self.store.clear()
+		for d in self.conf.directories:
+			vals = [d.path, d.archive_type, d.last_backup, d.last_changed, d.include]
+			self.store.append(vals)
+
 	def do_add(self, widget):
 		""" Callback for creating a new Directory entry
 		"""
@@ -90,7 +98,9 @@ class BackupFrame:
 		self.update_conf()
 		if ask_dialog(self.window, "Create Backup?"):
 			try:
+				backup_core.calculate_includes(self.conf)
 				backup_core.perform_backup(self.conf)
+				self.update_table()
 				print("Done")
 			except Exception as ex:
 				print("Error", ex)
@@ -100,9 +110,7 @@ class BackupFrame:
 		then create the actual Tree View for showing and editing those values.
 		"""
 		self.store = Gtk.ListStore(str, str, str, str, bool)
-		for d in self.conf.directories:
-			vals = [d.path, d.archive_type, d.last_backup, d.last_changed, d.include]
-			self.store.append(vals)
+		self.update_table()
 
 		self.table = Gtk.TreeView.new_with_model(self.store)
 		self.select = self.table.get_selection()

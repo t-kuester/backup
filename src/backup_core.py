@@ -82,10 +82,10 @@ def backup_directory(directory: Directory, name_pattern: str, target_dir: str):
 	path = os.path.split(directory.path)
 	parent, dirname = path[-2:]
 	date = get_date()
-	filename = name_pattern.format(parent=parent, dirname=dirname, date=date)
+	filename = name_pattern.format(parent=parent, dirname=norm(dirname), date=date)
 	# create archive file
 	archive_actions = {TYPE_ZIP: create_zip, TYPE_TAR: create_tar}
-	archive = archive_actions[directory.archive_type](filename, directory.path)
+	archive = archive_actions[directory.archive_type](filename, norm(directory.path))
 	# move archive file to target directory
 	shutil.move(archive, target_dir)
 
@@ -122,6 +122,12 @@ def get_date() -> str:
 	"""Get uniformly formatted current date.
 	"""
 	return datetime.now().strftime("%Y-%m-%d")
+
+
+def norm(dirname: str) -> str:
+	"""Remove "." from filename and replace it with "_"
+	"""
+	return dirname.replace(".", "_")
 
 
 def main():

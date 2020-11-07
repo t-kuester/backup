@@ -40,7 +40,8 @@ class BackupFrame:
 		header.pack_start(self.target, True, True, 0)
 		header.pack_start(Gtk.Label(label="Pattern"), False, False, 10)
 		header.pack_start(self.pattern, True, True, 0)
-		header.pack_end(create_button("Backup!", self.do_backup, "Create Backup of Selected Directories", False), False, False, 0)
+		header.pack_end(create_button("document-save", self.do_backup, "Create Backup of Selected Directories"), False, False, 0)
+		header.pack_end(create_button("view-refresh", self.do_refresh, "Refresh Include State"), False, False, 0)
 		header.pack_end(create_button("list-remove", self.do_remove, "Mark selected for Removal"), False, False, 0)
 		header.pack_end(create_button("list-add", self.do_add, "Add new Entry"), False, False, 0)
 		
@@ -93,12 +94,20 @@ class BackupFrame:
 		_, it = self.select.get_selected()
 		if it is not None and ask_dialog(self.window, "Remove Directory?"):
 			self.store.remove(it)
+			
+	def do_refresh(self, widget):
+		""" Calculate include status from last-backup and last-changed
+		"""
+		self.update_conf()
+		backup_core.calculate_includes(self.conf)
+		self.update_table()
 
 	def do_backup(self, widget):
+		""" Create backup of the selected Directories.
+		"""
 		self.update_conf()
 		if ask_dialog(self.window, "Create Backup?"):
 			try:
-				backup_core.calculate_includes(self.conf)
 				backup_core.perform_backup(self.conf)
 				self.update_table()
 				print("Done")
@@ -116,12 +125,20 @@ class BackupFrame:
 		self.select = self.table.get_selection()
 		
 		for i, att in enumerate(["Path", "Type", "Last Backup", "Last Change", "Include?"]):
-			renderer = Gtk.CellRendererText() if i != 4 else Gtk.CellRendererToggle()
+			renderer = Gtk.CellRendererCombo()  if i == 1 else \
+			           Gtk.CellRendererToggle() if i == 4 else \
+			           Gtk.CellRendererText()
 			if i == 1:
+				type_list = Gtk.ListStore(str)
+				for x in backup_core.KNOWN_TYPES:
+					type_list.append([x])
 				def edit_func(widget, path, text, i=i):
 					self.store[path][i] = text
+				renderer.set_property("model", type_list)
+				renderer.set_property("text-column", 0)
 				renderer.set_property("editable", True)
 				renderer.connect("edited", edit_func)
+				
 			if i == 4:
 				def toggle_func(widget, path, i=i):
 					self.store[path][i] ^= True

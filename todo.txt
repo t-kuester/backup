@@ -8,5 +8,4 @@ CORE
 
 UI
 - simplify cell renderer creation code
-- make archive type (and possibly auto-include) a combo in the table
 - show progress of backup, in status bar, progress bar, or spinner in table?

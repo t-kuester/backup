@@ -5,7 +5,9 @@
 by Tobias Küster, 2016
 
 This module contains the algorithms and the logic for actually creating the
-backup. It can also be used for creating a backup from command line.
+backup. It can also be used for creating a backup from command line. Besides
+the actual backup-creation, this also provides helper methods for determining
+when a file was changed and whether a new backup is due.
 """
 
 import os
@@ -23,6 +25,7 @@ DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 TYPE_ZIP = "zip"
 TYPE_TAR = "tar"
 KNOWN_TYPES = (TYPE_ZIP, TYPE_TAR)
+
 
 def determine_last_changes(directory: Directory) -> str:
 	"""Determine when has been the last time any of the files in the given
@@ -64,11 +67,11 @@ def perform_backup(config: Configuration):
 		os.makedirs(target_dir)
 	for directory in config.directories:
 		if directory.include:
-			print("Backing up", directory)
+			print("Backing up", directory.path)
 			backup_directory(directory, config.name_pattern, target_dir)
 			directory.last_backup = datetime.now().strftime(DATE_FORMAT)
 		else:
-			print("skipping", directory)
+			print("Skipping", directory.path)
 
 
 def backup_directory(directory: Directory, name_pattern: str, target_dir: str):
@@ -129,17 +132,9 @@ def main():
 	- save updated config
 	"""
 	import config
-	
 	with config.open_config(config.CONFIG_FILE) as conf:
-		
-		for directory in conf.directories:
-			d = determine_last_changes(directory)
-			print("last changed", directory, d)
-		
 		calculate_includes(conf)
 		perform_backup(conf)
-	
-	print("Done.")
 	
 	
 if __name__ == "__main__":

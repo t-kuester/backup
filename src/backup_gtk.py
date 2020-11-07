@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 # -*- coding: utf8 -*-
 
@@ -11,7 +10,7 @@ similar layout.
 - big table with directories to be backed up
 - some text fields for "global" configuration like name patterns etc.
 - buttons for adding and removing directories, and for creating the backup
-- automatically save on exit
+- automatically save configuration on exit
 """
 
 import gi
@@ -100,7 +99,7 @@ class BackupFrame:
 		""" Create list model and filter model and populate with Directories,
 		then create the actual Tree View for showing and editing those values.
 		"""
-		self.store = Gtk.ListStore(*[str, str, str, str, bool])
+		self.store = Gtk.ListStore(str, str, str, str, bool)
 		for d in self.conf.directories:
 			vals = [d.path, d.archive_type, d.last_backup, d.last_changed, d.include]
 			self.store.append(vals)

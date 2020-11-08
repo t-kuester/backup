@@ -5,8 +5,8 @@ CORE
 - exception if backup archive already exists
 - do I really have to os.walk the files in the directories, or can I compress
   the directory as a whole?
+- thread hangs on second backup?
 
 UI
 - simplify cell renderer creation code
-- show progress of backup, in status bar, progress bar, or spinner in table?
 - individual progress bars for each directory? 

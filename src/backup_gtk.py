@@ -53,13 +53,14 @@ class BackupFrame:
 		table_scroller.add(self.table)
 
 		# progress of the current backup operation
-		self.status = Gtk.Statusbar()
+		self.progress = Gtk.ProgressBar()
+		self.progress.set_show_text(True)
 		
 		# main vertical "box" for all the contents of the window
 		body = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 		body.pack_start(header, False, False, 0)
 		body.pack_start(table_scroller, True, True, 0)
-		body.pack_end(self.status, False, False, 0)
+		body.pack_end(self.progress, False, False, 0)
 
 		# put it all together in a window
 		self.window = Gtk.ApplicationWindow(title="Simple Backup Tool")
@@ -115,8 +116,10 @@ class BackupFrame:
 		self.update_conf()
 		if ask_dialog(self.window, "Create Backup?"):
 			def worker():
-				for msg in backup_core.perform_backup_iter(self.conf):
-					self.status.push(0, msg)
+				n = len(self.conf.directories)
+				for i, msg in enumerate(backup_core.perform_backup_iter(self.conf)):
+					self.progress.set_text(msg)
+					self.progress.set_fraction(i / n)
 					time.sleep(0.5)
 				self.update_table()
 			t = threading.Thread(target=worker)

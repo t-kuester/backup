@@ -44,8 +44,8 @@ class BackupFrame:
 		header.pack_start(self.pattern, True, True, 0)
 		header.pack_end(create_button("document-save", self.do_backup, "Create Backup of Selected Directories"), False, False, 0)
 		header.pack_end(create_button("view-refresh", self.do_refresh, "Refresh Include State"), False, False, 0)
-		header.pack_end(create_button("list-remove", self.do_remove, "Mark selected for Removal"), False, False, 0)
-		header.pack_end(create_button("list-add", self.do_add, "Add new Entry"), False, False, 0)
+		header.pack_end(create_button("list-remove", self.do_remove, "Remove Directory"), False, False, 0)
+		header.pack_end(create_button("list-add", self.do_add, "Add Directory"), False, False, 0)
 		
 		# create table model and body section with table view
 		self.create_table()
@@ -55,6 +55,7 @@ class BackupFrame:
 		# progress of the current backup operation
 		self.progress = Gtk.ProgressBar()
 		self.progress.set_show_text(True)
+		self.progress.set_text("")
 		
 		# main vertical "box" for all the contents of the window
 		body = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)

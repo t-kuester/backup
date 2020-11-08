@@ -90,10 +90,8 @@ def backup_directory(directory: Directory, name_pattern: str, target_dir: str):
 	to the given target directory.
 	"""
 	# construct target file name
-	path = os.path.split(directory.path)
-	parent, dirname = path[-2:]
-	date = get_date()
-	filename = name_pattern.format(parent=parent, dirname=norm(dirname), date=date)
+	parent, dirname = os.path.split(directory.path)
+	filename = name_pattern.format(parent=parent, dirname=norm(dirname), date=get_date())
 	# create archive file
 	archive_actions = {TYPE_ZIP: create_zip, TYPE_TAR: create_tar}
 	archive = archive_actions[directory.archive_type](filename, norm(directory.path))

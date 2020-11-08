@@ -70,7 +70,9 @@ to the description of the configuration above.
   the created archive files
 * use the _Add_ and _Remove_ buttons to select new directories to add to the
   list or to remove entries from the list
-* the _Backup!_ button is used to create the actual backup
+* the _Refresh_ button is used to refresh the _last-change_ attribute of the
+  directories and to set the _include_ attribute accordingly
+* the _Backup_ button is used to create the actual backup
 * the table can be sorted by each of the columns, but only the _Type_ and
   _Include?_ columns are editable; valid archive types are `zip` and `tar`
 * the configuration is automatically saved when the UI is closed

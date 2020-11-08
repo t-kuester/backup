@@ -14,14 +14,13 @@ import os
 import shutil
 import zipfile
 import tarfile
-from datetime import datetime
+from datetime import datetime as dt
 from typing import Iterable
 
 import backup_model
 from backup_model import Directory, Configuration
 
 
-DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 TYPE_ZIP = "zip"
 TYPE_TAR = "tar"
 KNOWN_TYPES = (TYPE_ZIP, TYPE_TAR)
@@ -31,10 +30,8 @@ def determine_last_changes(directory: Directory) -> str:
 	"""Determine when has been the last time any of the files in the given
 	directory have been changed.
 	"""
-	last_changed = max(os.path.getmtime(os.path.join(subdir, filename))
-	                   for subdir, _, files in os.walk(directory.path)
-	                   for filename in files)
-	directory.last_changed = datetime.fromtimestamp(last_changed).strftime(DATE_FORMAT)
+	last_change = max(os.path.getmtime(f) for f in all_files(directory.path))
+	directory.last_changed = get_date(last_change, add_time=True)
 	return directory.last_changed
 	
 	
@@ -71,7 +68,7 @@ def perform_backup(config: Configuration):
 		if directory.include:
 			print("Backing up", directory.path)
 			backup_directory(directory, config.name_pattern, target_dir)
-			directory.last_backup = datetime.now().strftime(DATE_FORMAT)
+			directory.last_backup = get_date(add_time=True)
 		else:
 			print("Skipping", directory.path)
 
@@ -96,23 +93,23 @@ def create_zip(filename: str, to_compress: str) -> str:
 	"""Create zip file using given filename containing the directory to_compress
 	and all of its files.
 	"""
-	zip_file = zipfile.ZipFile(filename + ".zip", mode="w")
-	for filepath in all_files(to_compress):
-		zip_file.write(filepath)
-	zip_file.close()
-	return filename + ".zip"
+	with zipfile.ZipFile(filename + ".zip", mode="w") as zip_file:
+		for filepath in all_files(to_compress):
+			zip_file.write(filepath)
+		return filename + ".zip"
 	
 	
 def create_tar(filename: str, to_compress: str) -> str:
 	"""Create tar file using given filename containing the directory to_compress
 	and all of its files.
 	"""
-	tar_file = tarfile.TarFile(filename + ".tar", mode="w")
-	for filepath in all_files(to_compress):
-		tar_file.add(filepath)
-	tar_file.close()
-	return filename + ".tar"
+	with tarfile.TarFile(filename + ".tar", mode="w") as tar_file:
+		for filepath in all_files(to_compress):
+			tar_file.add(filepath)
+		return filename + ".tar"
 
+
+# HElPER FUNCTIONS
 
 def all_files(path: str) -> Iterable[str]:
 	"""Generate all files in a given directory.
@@ -120,10 +117,11 @@ def all_files(path: str) -> Iterable[str]:
 	return (os.path.join(d, f) for d, _, fs in os.walk(path) for f in fs)
 
 
-def get_date() -> str:
+def get_date(timestamp=None, add_time=False) -> str:
 	"""Get uniformly formatted current date.
 	"""
-	return datetime.now().strftime("%Y-%m-%d")
+	pattern = "%Y-%m-%d %H:%M:%S" if add_time else "%Y-%m-%d"
+	return (dt.fromtimestamp(timestamp) if timestamp else dt.now()).strftime(pattern)
 
 
 def norm(dirname: str) -> str:

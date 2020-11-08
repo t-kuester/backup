@@ -1,10 +1,10 @@
 CORE
 - support backup on removeable & remote drives
 - do not include parent dir in zip, but put zip into parent dir
-- make auto-include attribute of configuration...
-- ... or make directory.include an enum of "yes/no/auto"
 - problems with name-pattern and target dir?
 - exception if backup archive already exists
+- do I really have to os.walk the files in the directories, or can I compress
+  the directory as a whole?
 
 UI
 - simplify cell renderer creation code

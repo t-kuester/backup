@@ -13,6 +13,8 @@ similar layout.
 - automatically save configuration on exit
 """
 
+import threading
+import time
 import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
@@ -49,13 +51,18 @@ class BackupFrame:
 		self.create_table()
 		table_scroller = Gtk.ScrolledWindow()
 		table_scroller.add(self.table)
+
+		# progress of the current backup operation
+		self.status = Gtk.Statusbar()
 		
+		# main vertical "box" for all the contents of the window
 		body = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 		body.pack_start(header, False, False, 0)
 		body.pack_start(table_scroller, True, True, 0)
+		body.pack_end(self.status, False, False, 0)
 
 		# put it all together in a window
-		self.window = Gtk.ApplicationWindow(title=f"Backup Tool")
+		self.window = Gtk.ApplicationWindow(title="Simple Backup Tool")
 		self.window.resize(800, 400)
 		self.window.connect("delete-event", lambda *_: self.update_conf())
 		self.window.connect("destroy", Gtk.main_quit)
@@ -107,12 +114,14 @@ class BackupFrame:
 		"""
 		self.update_conf()
 		if ask_dialog(self.window, "Create Backup?"):
-			try:
-				backup_core.perform_backup(self.conf)
+			def worker():
+				for msg in backup_core.perform_backup_iter(self.conf):
+					self.status.push(0, msg)
+					time.sleep(0.5)
 				self.update_table()
-				print("Done")
-			except Exception as ex:
-				print("Error", ex)
+			t = threading.Thread(target=worker)
+			t.daemon = True
+			t.start()
 	
 	def create_table(self):
 		""" Create list model and filter model and populate with Directories,

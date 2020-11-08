@@ -9,3 +9,4 @@ CORE
 UI
 - simplify cell renderer creation code
 - show progress of backup, in status bar, progress bar, or spinner in table?
+- individual progress bars for each directory? 

@@ -54,23 +54,35 @@ def calculate_includes(config: Configuration):
 		print("including", directory.path, inc)
 
 
+# BACKUP CREATION
+
 def perform_backup(config: Configuration):
 	"""Perform the backup, creating archive files of all directories to be
 	included in the backup and moving those archives to the appointed target.
+	Like below, but performing the entire backup in one go
+	"""
+	for s in perform_backup_iter(config):
+		print(s)
+		
+		
+def perform_backup_iter(config: Configuration):
+	"""Perform the backup, creating archive files of all directories to be
+	included in the backup and moving those archives to the appointed target.
+	This function is a generator/iterator, yielding after each directory.
 	"""
 	target_dir = config.target_dir.format(date=get_date())
 	if target_dir.startswith("~"):
 		target_dir = os.environ["HOME"] + target_dir[1:]
-	print("Target dir is", target_dir)
 	if not os.path.isdir(target_dir):
 		os.makedirs(target_dir)
 	for directory in config.directories:
 		if directory.include:
-			print("Backing up", directory.path)
+			yield f"Backing up {directory.path}"
 			backup_directory(directory, config.name_pattern, target_dir)
 			directory.last_backup = get_date(add_time=True)
 		else:
-			print("Skipping", directory.path)
+			yield f"Skipping {directory.path}"
+	yield "Done"
 
 
 def backup_directory(directory: Directory, name_pattern: str, target_dir: str):

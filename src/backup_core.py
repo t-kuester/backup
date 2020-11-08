@@ -148,7 +148,7 @@ def main():
 	- save updated config
 	"""
 	import config
-	with config.open_config(config.CONFIG_FILE) as conf:
+	with config.open_config() as conf:
 		calculate_includes(conf)
 		perform_backup(conf)
 	

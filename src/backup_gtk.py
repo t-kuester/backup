@@ -189,7 +189,7 @@ def ask_dialog(parent, title, message=None):
 	
 
 def main():
-	with config.open_config(config.CONFIG_FILE) as conf:
+	with config.open_config() as conf:
 		BackupFrame(conf)
 		Gtk.main()
 

@@ -11,7 +11,7 @@ files to the ~/.config directory.
 import os
 from contextlib import contextmanager
 
-from backup_model import load_from_json, write_to_json
+from backup_model import load_from_json, write_to_json, Configuration
 
 
 USER_DIR = os.environ["HOME"]
@@ -24,14 +24,14 @@ DEFAULT_ARCHIVE_TYPE = "zip"
 
 
 @contextmanager
-def open_config(json_location: str):
+def open_config(json_location=CONFIG_FILE):
 	try:
 		with open(json_location, "r") as f:
 			conf = load_from_json(f.read())
 	except Exception as e:
-		os.makedirs(config.CONFIG_PATH, exist_ok=True)
-		config = Configuration(DEFAULT_TARGET_DIR, DEFAULT_NAME_PATTERN,
-		                       [Directory("/path/to/directory")])
+		parent, _ = os.path.split(json_location)
+		os.makedirs(parent, exist_ok=True)
+		conf = Configuration(DEFAULT_TARGET_DIR, DEFAULT_NAME_PATTERN, [])
 
 	yield conf
 	

@@ -143,7 +143,7 @@ class DirectoryPanel(tkinter.Canvas):
 
 
 def main():
-	with config.open_config(config.CONFIG_FILE) as conf:
+	with config.open_config() as conf:
 		root = tkinter.Tk()
 		frame = BackupFrame(root, conf)
 		root.title("Backup")

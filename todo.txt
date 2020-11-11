@@ -1,12 +1,8 @@
-CORE
 - support backup on removeable & remote drives
 - do not include parent dir in zip, but put zip into parent dir
 - problems with name-pattern and target dir?
 - exception if backup archive already exists
-- do I really have to os.walk the files in the directories, or can I compress
-  the directory as a whole?
+- do I really have to os.walk the files in the directories,
+  or can I compress the directory as a whole?
 - thread hangs on second backup?
-
-UI
-- simplify cell renderer creation code
-- individual progress bars for each directory? 
+- update readme and screenshot

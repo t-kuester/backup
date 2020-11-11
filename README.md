@@ -27,19 +27,19 @@ the different directories to be backed up as well as some more information.
 The file is automatically read when the program is started and updated when it
 is closed. The content of the file is explained below.
 
-	{
-		"target_dir": "/home/user/backup_{date}",
-		"name_pattern": "{parent}/{dirname} {date}",
-		"directories": [
-			{
-				"path": "/home/user/.config",
-				"archive_type": "zip",
-				"last_backup": "2020-11-07 19:58:41",
-				"last_changed": "2020-11-07 19:58:35",
-				"include": true
-			}, ...
-		]
-	}
+    {
+        "target_dir": "/home/user/backup_{date}",
+        "name_pattern": "{parent}/{dirname} {date}",
+        "directories": [
+            {
+                "path": "/home/user/.config",
+                "archive_type": "zip",
+                "last_backup": "2020-11-07 19:58:41",
+                "last_changed": "2020-11-07 19:58:35",
+                "include": true
+            }, ...
+        ]
+    }
 
 The `target_dir` is the directory where new backups should be stored. The
 `{date}` placeholder can be used for inserting the current date. Similarly, the
@@ -61,7 +61,7 @@ User Interface
 --------------
 As seen in the following figure, the user interface mainly consists of a large
 table of all the directories to be backed up and a few buttons and text inputs.
-For a description of the individual attributes and palceholders, please reder
+For a description of the individual attributes and palceholders, please refer
 to the description of the configuration above.
 
 ![Screenshot](backup.png)
@@ -75,4 +75,5 @@ to the description of the configuration above.
 * the _Backup_ button is used to create the actual backup
 * the table can be sorted by each of the columns, but only the _Type_ and
   _Include?_ columns are editable; valid archive types are `zip` and `tar`
+* when the backup has been triggered, the bottom of the UI shows the progress
 * the configuration is automatically saved when the UI is closed

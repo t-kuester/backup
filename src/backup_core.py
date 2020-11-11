@@ -90,13 +90,26 @@ def backup_directory(directory: Directory, name_pattern: str, target_dir: str):
 	to the given target directory.
 	"""
 	# construct target file name
-	parent, dirname = os.path.split(directory.path)
-	filename = name_pattern.format(parent=parent, dirname=norm(dirname), date=get_date())
+	src_parent, src_dir = os.path.split(directory.path)
+	target_path = name_pattern.format(parent=src_parent, dirname=norm(src_dir), date=get_date())
+	target_path_in_target_dir = os.path.join(target_dir, target_path.lstrip("/"))
+	tgt_parent, tgt_file = os.path.split(target_path_in_target_dir)
+	
+	# cd to parent, then only zip dirname
+	os.chdir(src_parent)
+	
 	# create archive file
 	archive_actions = {TYPE_ZIP: create_zip, TYPE_TAR: create_tar}
-	archive = archive_actions[directory.archive_type](filename, norm(directory.path))
+	function = archive_actions[directory.archive_type]
+	archive_file = function(tgt_file, src_dir)
+	
 	# move archive file to target directory
-	shutil.move(archive, target_dir)
+	os.makedirs(tgt_parent, exist_ok=True)
+	shutil.move(archive_file, tgt_parent)
+	# TODO instead of moving the file to the target dir, just create it in the target dir!
+	# TODO check if file exists, then either rename it, or not compress it at all
+	#      right now, it compresses the file and then leaves it where it is,
+	#      which might be just anywhere
 
 
 def create_zip(filename: str, to_compress: str) -> str:

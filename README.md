@@ -3,7 +3,7 @@ Simple Backup Tool
 
 _2016-2020, Tobias Küster_
 
-This is a very simple tool for creating backups. I made this primarilly for my
+This is a very simple tool for creating backups. I made this primarily for my
 personal use and still use it regularly. At first it was just a simple script
 and a file with the directories I want to back up, but eventually it got a
 proper UI and some more convenience features, but it is still very basic.
@@ -61,7 +61,7 @@ User Interface
 --------------
 As seen in the following figure, the user interface mainly consists of a large
 table of all the directories to be backed up and a few buttons and text inputs.
-For a description of the individual attributes and palceholders, please refer
+For a description of the individual attributes and placeholders, please refer
 to the description of the configuration above.
 
 ![Screenshot](backup.png)
@@ -77,3 +77,17 @@ to the description of the configuration above.
   _Include?_ columns are editable; valid archive types are `zip` and `tar`
 * when the backup has been triggered, the bottom of the UI shows the progress
 * the configuration is automatically saved when the UI is closed
+
+
+Creating Backups
+----------------
+To create a backup, add and select the directories to be backed up and hit the
+_Backup_ button. For each directory, an archive of the selected type is created
+and temporarily stored in the working directory before being moved to the actual
+backup directory. If the file or the parent directories start with a `.` (i.e.
+indicating that they are hidden) the `.` is replaced with a `_` in the backup.
+_Note:_ Any existing files with the same name in those directories will be
+overwritten without further warning!
+
+Afterwards, the collected backups can be moved to the target drive, e.g. a CD,
+removeable USB drive, betwork share, or cloud storage.

@@ -1,6 +1,14 @@
+IDEAS
 - support backup on removeable & remote drives
-- exception if backup archive already exists
 - do I really have to os.walk the files in the directories,
   or can I compress the directory as a whole?
+- add folders by drag-and-drop
+- show size?
+
+BUGS
+- exception if backup archive already exists
+  - fehler beim verschieben der datei??? wieso?
 - thread hangs on second backup?
-- update readme and screenshot
+- UI not properly refreshed?
+- no updates written when killed in between
+- hidden-"." only replaced in last path segment (not e.g. for mail-subfolder)

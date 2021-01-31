@@ -65,7 +65,7 @@ def perform_backup(config: Configuration):
 		print(s)
 		
 		
-def perform_backup_iter(config: Configuration):
+def perform_backup_iter(config: Configuration) -> Iterable[str]:
 	"""Perform the backup, creating archive files of all directories to be
 	included in the backup and moving those archives to the appointed target.
 	This function is a generator/iterator, yielding after each directory.
@@ -91,7 +91,7 @@ def backup_directory(directory: Directory, name_pattern: str, target_dir: str):
 	"""
 	# construct target file name
 	src_parent, src_dir = os.path.split(directory.path)
-	target_path = name_pattern.format(parent=src_parent, dirname=norm(src_dir), date=get_date())
+	target_path = name_pattern.format(parent=norm(src_parent), dirname=norm(src_dir), date=get_date())
 	target_path_in_target_dir = os.path.join(target_dir, target_path.lstrip("/"))
 	tgt_parent, tgt_file = os.path.split(target_path_in_target_dir)
 	

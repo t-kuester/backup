@@ -54,7 +54,7 @@ def write_to_json(configuration: Configuration) -> str:
 	"""
 	config = dict(configuration.__dict__)
 	config["directories"] = [d.__dict__ for d in config["directories"]]
-	return json.dumps(config, sort_keys=True, indent=4, separators=(',', ': '))
+	return json.dumps(config, indent=4)
 
 
 # TESTING
@@ -69,7 +69,7 @@ def test():
 	string = write_to_json(conf)
 	conf2 = load_from_json(string)
 	print(conf)
-	print(conf2)
+	print(string)
 	assert str(conf) == str(conf2)
 	assert string == write_to_json(conf2)
 

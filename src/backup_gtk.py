@@ -71,12 +71,15 @@ class BackupFrame:
 		self.window.add(body)
 		self.window.show_all()
 		
-	def update_conf(self):
+	def update_conf(self, check=False):
 		""" Update Configuration from Entries and Directories Table.
 		"""
 		self.conf.target_dir = self.target.get_text()
 		self.conf.name_pattern = self.pattern.get_text()
 		self.conf.directories = [backup_model.Directory(*vals) for vals in self.store]
+		if check:
+			invalid = [d.path for d in self.conf.directories if not backup_core.check_directory(d)]
+			show_warning(self.window, "Not a directory", "\n".join(invalid))
 		
 	def update_table(self):	
 		"""Update table view from configuration, e.g. after updating the dates.
@@ -107,14 +110,14 @@ class BackupFrame:
 	def do_refresh(self, widget):
 		""" Calculate include status from last-backup and last-changed
 		"""
-		self.update_conf()
+		self.update_conf(True)
 		backup_core.calculate_includes(self.conf)
 		self.update_table()
 
 	def do_backup(self, widget):
 		""" Create backup of the selected Directories.
 		"""
-		self.update_conf()
+		self.update_conf(True)
 		if ask_dialog(self.window, "Create Backup?"):
 			def worker():
 				n = len(self.conf.directories)
@@ -186,6 +189,17 @@ def ask_dialog(parent, title, message=None):
 	res = dialog.run() == Gtk.ResponseType.YES
 	dialog.destroy()
 	return res
+
+	
+def show_warning(parent, title, message):
+	""" Helper method for opening a simple yes/no dialog and getting the answer
+	"""
+	dialog = Gtk.MessageDialog(parent=parent, flags=0, 
+		message_type=Gtk.MessageType.WARNING, 
+		buttons=Gtk.ButtonsType.OK, text=title)
+	dialog.format_secondary_text(message)
+	dialog.run()
+	dialog.destroy()
 	
 
 def main():

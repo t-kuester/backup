@@ -26,13 +26,12 @@ TYPE_TAR = "tar"
 KNOWN_TYPES = (TYPE_ZIP, TYPE_TAR)
 
 
-def determine_last_changes(directory: Directory) -> str:
+def determine_last_changes(directory: Directory):
 	"""Determine when has been the last time any of the files in the given
 	directory have been changed.
 	"""
-	last_change = max(os.path.getmtime(f) for f in all_files(directory.path))
+	last_change = max((os.path.getmtime(f) for f in all_files(directory.path)), default=None)
 	directory.last_changed = get_date(last_change, add_time=True)
-	return directory.last_changed
 	
 	
 def determine_include(directory: Directory) -> bool:
@@ -40,7 +39,7 @@ def determine_include(directory: Directory) -> bool:
 	based on the time of the last backup and the time of the last change.
 	"""
 	backup, change = directory.last_backup, directory.last_changed
-	directory.include = bool(not (backup and change) or backup < change)
+	directory.include = bool(not (backup and change) or backup < change) and check_directory(directory)
 	return directory.include
 
 
@@ -52,6 +51,12 @@ def calculate_includes(config: Configuration):
 		determine_last_changes(directory)
 		inc = determine_include(directory)
 		print("including", directory.path, inc)
+
+
+def check_directory(directory: Directory) -> bool:
+	"""Check whether the directory is (still) pointing to a valid directory.
+	"""
+	return os.path.isdir(directory.path)
 
 
 # BACKUP CREATION

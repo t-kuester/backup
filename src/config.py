@@ -18,7 +18,7 @@ USER_DIR = os.environ["HOME"]
 CONFIG_PATH = os.path.join(USER_DIR, ".config", "t-kuester")
 CONFIG_FILE = os.path.join(CONFIG_PATH, "backup.json")
 
-DEFAULT_TARGET_PATTERN = "~/BACKUP/{parent}/{dirname}{inc} {date}"
+DEFAULT_TARGET_PATTERN = "~/BACKUP/{parent}/{dirname} {date}{inc}"
 DEFAULT_ARCHIVE_TYPE = "zip"
 
 

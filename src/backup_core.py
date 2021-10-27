@@ -11,7 +11,8 @@ when a file was changed and whether a new backup is due.
 """
 
 import os
-import shutil
+import re
+import time
 import zipfile
 import tarfile
 from datetime import datetime as dt
@@ -19,6 +20,7 @@ from typing import Iterable
 
 import backup_model
 from backup_model import Directory, Configuration
+import config
 
 
 TYPE_ZIP = "zip"
@@ -28,88 +30,72 @@ KNOWN_TYPES = (TYPE_ZIP, TYPE_TAR)
 
 # BACKUP CREATION
 
-def perform_backup(config: Configuration):
-	"""Perform the backup, creating archive files of all directories to be
-	included in the backup and moving those archives to the appointed target.
-	Like below, but performing the entire backup in one go
-	"""
-	for s in perform_backup_iter(config):
-		print(s)
-		
-		
-def perform_backup_iter(config: Configuration) -> Iterable[str]:
+def perform_backup_iter(conf: Configuration) -> Iterable[str]:
 	"""Perform the backup, creating archive files of all directories to be
 	included in the backup and moving those archives to the appointed target.
 	This function is a generator/iterator, yielding after each directory.
 	"""
-	target_dir = config.target_dir.format(date=get_date())
-	if target_dir.startswith("~"):
-		target_dir = os.environ["HOME"] + target_dir[1:]
-	if not os.path.isdir(target_dir):
-		os.makedirs(target_dir)
-	for directory in config.directories:
-		if directory.include:
+	for directory in conf.directories:
+		if directory.include and any(directory.iter_include()):
 			yield f"Backing up {directory.path}"
-			backup_directory(directory, config.name_pattern, target_dir)
-			directory.last_backup = get_date(add_time=True)
+			backup_directory(conf, directory)
+			directory.last_backup = time.time()
 		else:
 			yield f"Skipping {directory.path}"
 	yield "Done"
 
 
-def backup_directory(directory: Directory, name_pattern: str, target_dir: str):
+def backup_directory(conf: Configuration, directory: Directory):
 	"""Perform the backup for a single directory and move the resulting archive
 	to the given target directory.
 	"""
-	# construct target file name
-	src_parent, src_dir = os.path.split(directory.path)
-	target_path = name_pattern.format(parent=norm(src_parent), dirname=norm(src_dir), date=get_date())
-	target_path_in_target_dir = os.path.join(target_dir, target_path.lstrip("/"))
-	tgt_parent, tgt_file = os.path.split(target_path_in_target_dir)
+	target_file = get_target_file(conf, directory)
 	
-	# cd to parent, then only zip dirname
-	os.chdir(src_parent)
+	tgt_parent, _ = os.path.split(target_file)
+	os.makedirs(tgt_parent, exist_ok=True)
 	
 	# create archive file
-	archive_actions = {TYPE_ZIP: create_zip, TYPE_TAR: create_tar}
+	archive_actions = {
+		TYPE_ZIP: create_zip,
+		TYPE_TAR: create_tar
+	}
 	function = archive_actions[directory.archive_type]
-	archive_file = function(tgt_file, src_dir)
+	archive_file = function(directory, target_file)
 	
-	# move archive file to target directory
-	os.makedirs(tgt_parent, exist_ok=True)
-	shutil.move(archive_file, tgt_parent)
-	# TODO instead of moving the file to the target dir, just create it in the target dir!
-	# TODO check if file exists, then either rename it, or not compress it at all
-	#      right now, it compresses the file and then leaves it where it is,
-	#      which might be just anywhere
 
-
-def create_zip(filename: str, to_compress: str) -> str:
+def create_zip(directory: Directory, target_file: str):
 	"""Create zip file using given filename containing the directory to_compress
 	and all of its files.
 	"""
-	with zipfile.ZipFile(filename + ".zip", mode="w") as zip_file:
-		for filepath in all_files(to_compress):
+	with zipfile.ZipFile(target_file + ".zip", mode="w") as zip_file:
+		for filepath in directory.iter_include():
 			zip_file.write(filepath)
-		return filename + ".zip"
 	
 	
-def create_tar(filename: str, to_compress: str) -> str:
+def create_tar(directory: Directory, target_file: str):
 	"""Create tar file using given filename containing the directory to_compress
 	and all of its files.
 	"""
-	with tarfile.TarFile(filename + ".tar", mode="w") as tar_file:
-		for filepath in all_files(to_compress):
+	with tarfile.TarFile(target_file + ".tar", mode="w") as tar_file:
+		for filepath in directory.iter_include():
 			tar_file.add(filepath)
-		return filename + ".tar"
 
 
 # HElPER FUNCTIONS
 
-def all_files(path: str) -> Iterable[str]:
-	"""Generate all files in a given directory.
-	"""
-	return (os.path.join(d, f) for d, _, fs in os.walk(path) for f in fs)
+def get_target_file(conf: Configuration, directory: Directory) -> str:
+	src_parent, src_dir = os.path.split(re.sub(r"(?:^|//)\.", "_", directory.path))
+	placeholders = {
+		backup_model.P_DATE: get_date(),
+		backup_model.P_TIME: get_date(add_time=True),
+		backup_model.P_PRNT: src_parent,
+		backup_model.P_DIRN: src_dir,
+		backup_model.P_INC: "_inc" if directory.incremental else "",
+	}
+	target_dir = conf.target_pattern
+	target_dir = re.sub(r"^~", config.USER_DIR, target_dir)
+	target_dir = re.sub(r"\{.*?\}", lambda m: placeholders[m.group()], target_dir)
+	return target_dir
 
 
 def get_date(timestamp=None, add_time=False) -> str:
@@ -119,11 +105,4 @@ def get_date(timestamp=None, add_time=False) -> str:
 	return (dt.now().strftime(pattern) if timestamp is None else
 	        "never" if timestamp < 0 else
 	        dt.fromtimestamp(timestamp).strftime(pattern))
-
-
-def norm(dirname: str) -> str:
-	"""Remove "." from filename and replace it with "_"
-	"""
-	return dirname.replace(".", "_")
-
 

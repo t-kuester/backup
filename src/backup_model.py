@@ -15,8 +15,9 @@ from dataclasses import dataclass
 from typing import Iterable, List
 
 
-VALID_PLACEHOLDERS = ["{date}", "{datetime}", "{parent}", "{dirname}", "{inc}"]
-REQUIRED_PLACEHOLDERS = ["{dirname}"]
+P_DATE, P_TIME, P_PRNT, P_DIRN, P_INC = "{date}", "{datetime}", "{parent}", "{dirname}", "{inc}"
+VALID_PLACEHOLDERS = [P_DATE, P_TIME, P_PRNT, P_DIRN, P_INC]
+REQUIRED_PLACEHOLDERS = [P_DIRN]
 
 
 @dataclass
@@ -38,6 +39,9 @@ class Directory:
 	
 	def iter_modified(self) -> Iterable[str]:
 		return (f for f in self.iter_files() if os.path.getmtime(f) > self.last_backup)
+	
+	def iter_include(self) -> Iterable[str]:
+		return self.iter_modified() if self.incremental else self.iter_files()
 		
 	def update_include(self):
 		self.include = any(self.iter_modified())

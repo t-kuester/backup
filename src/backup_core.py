@@ -13,10 +13,10 @@ when a file was changed and whether a new backup is due.
 import os
 import re
 import time
-import zipfile
-import tarfile
 from datetime import datetime as dt
 from typing import Iterable
+from tarfile import TarFile
+from zipfile import ZipFile, ZIP_DEFLATED
 
 import backup_model
 from backup_model import Directory, Configuration
@@ -66,7 +66,7 @@ def create_zip(directory: Directory, target_file: str):
 	"""Create zip file using given filename containing the directory to_compress
 	and all of its files.
 	"""
-	with zipfile.ZipFile(target_file + ".zip", mode="w") as zip_file:
+	with ZipFile(target_file, mode="w", compression=ZIP_DEFLATED, compresslevel=5) as zip_file:
 		for filepath in directory.iter_include():
 			zip_file.write(filepath)
 	
@@ -75,7 +75,7 @@ def create_tar(directory: Directory, target_file: str):
 	"""Create tar file using given filename containing the directory to_compress
 	and all of its files.
 	"""
-	with tarfile.TarFile(target_file + ".tar", mode="w") as tar_file:
+	with TarFile(target_file, mode="w") as tar_file:
 		for filepath in directory.iter_include():
 			tar_file.add(filepath)
 

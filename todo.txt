@@ -16,7 +16,6 @@ BUGS
 - thread hangs on second backup?
 - UI not properly refreshed?
 - no updates written when killed in between
-- files not properly compressed, zip is like tar
 
 TEST
 - incremental backup

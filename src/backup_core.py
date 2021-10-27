@@ -83,7 +83,11 @@ def create_tar(directory: Directory, target_file: str):
 # HElPER FUNCTIONS
 
 def get_target_file(conf: Configuration, directory: Directory) -> str:
-	src_parent, src_dir = os.path.split(re.sub(r"(?:^|//)\.", "_", directory.path))
+	"""Substitute placeholders and normalize file name, i.e. replace leading '.' (hidden files)
+	with '_', but only in directory name, not in target path, replace '~' with home dir, and
+	replace multiple '/' with single '/'.
+	"""
+	src_parent, src_dir = os.path.split(re.sub(r"(?<=/)\.", "_", directory.path))
 	placeholders = {
 		backup_model.P_DATE: get_date(),
 		backup_model.P_TIME: get_date(add_time=True),
@@ -91,10 +95,11 @@ def get_target_file(conf: Configuration, directory: Directory) -> str:
 		backup_model.P_DIRN: src_dir,
 		backup_model.P_INC: "_inc" if directory.incremental else "",
 	}
-	target_dir = conf.target_pattern
-	target_dir = re.sub(r"^~", config.USER_DIR, target_dir)
-	target_dir = re.sub(r"\{.*?\}", lambda m: placeholders[m.group()], target_dir)
-	return target_dir
+	target_file = conf.target_pattern
+	target_file = re.sub(r"^~", config.USER_DIR, target_file)
+	target_file = re.sub(r"\{.*?\}", lambda m: placeholders[m.group()], target_file)
+	target_file = re.sub(r"/+", "/", target_file)
+	return '.'.join((target_file, directory.archive_type))
 
 
 def get_date(timestamp=None, add_time=False) -> str:

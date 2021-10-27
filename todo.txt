@@ -5,10 +5,9 @@ IDEAS
 - add folders by drag-and-drop
 - show size?
 - only date in table, time only on tooltip
-- update readme
+- update readme, screenshot
 - disable buttons while backup is underway
 - use "format" again in pattern resolution and allow custom date/time format
-- use some kind of date formatter in GTK Table View?
 - option: strip home dir
 - archive files should not include full paths
 
@@ -17,5 +16,11 @@ BUGS
 - thread hangs on second backup?
 - UI not properly refreshed?
 - no updates written when killed in between
-- hidden-"." only replaced in last path segment (not e.g. for mail-subfolder)
 - files not properly compressed, zip is like tar
+
+TEST
+- incremental backup
+- zip file size
+- using async instead of threading?
+- kill ui before update is complete
+- proper sync between model and UI in different situations

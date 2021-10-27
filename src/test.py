@@ -2,7 +2,8 @@ import os
 import unittest
 
 from backup_model import Configuration, Directory, write_to_json, load_from_json
-from config import open_config
+import backup_core
+from config import open_config, USER_DIR
 
 TEST_CONFIG = "./test.json"
 TEST_FILE = "./src/test.txt"
@@ -42,21 +43,29 @@ class TestModel(unittest.TestCase):
 			self.assertEqual(conf1, conf2)
 	
 	def test_backup_filenames(self):
-		pass
+		"""test derivation of target filename"""
+		date = backup_core.get_date()
+		time = backup_core.get_date(add_time=True)
+		conf = Configuration("~/BACKUP {date}/{parent}/{dirname} {datetime}{inc}", [])
+		self.assertEqual(
+			backup_core.get_target_file(conf, Directory("/abs/path/to/file~nothome", "zip")),
+			f"{USER_DIR}/BACKUP {date}/abs/path/to/file~nothome {time}.zip"
+		)
+		self.assertEqual(
+			backup_core.get_target_file(conf, Directory("/abs/.hidden/.alsohidden/not.hidden", "tar", incremental=True)),
+			f"{USER_DIR}/BACKUP {date}/abs/_hidden/_alsohidden/not.hidden {time}_inc.tar"
+		)
 	
 	def test_create_zip(self):
+		"""test creation of zip file"""
 		pass
 		
 	def test_create_tar(self):
+		"""test creation of tar file"""
 		pass
 		
-	def test_calc_include_no_backup(self):
-		pass
-		
-	def test_calc_include_modified(self):
-		pass
-		
-	def test_calc_include_no_changes(self):
+	def test_calc_include(self):
+		"""test directories to include with (a) no prior backup, (b) modified files, (c) no changes"""
 		pass
 	
 	
@@ -70,11 +79,6 @@ class TestModel(unittest.TestCase):
 	create backup when file with same name already exists
 	create zip, check size (should at least be somewhat smaller)
 	"""
-
-
-class TestCore(unittest.TestCase):
-	
-	pass
 
 
 if __name__ == "__main__":

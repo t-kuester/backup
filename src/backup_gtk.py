@@ -13,11 +13,12 @@ similar layout.
 - automatically save configuration on exit
 """
 
-import threading
-import time
 import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
+
+import threading
+import time
 
 import backup_model, backup_core, config
 
@@ -31,16 +32,12 @@ class BackupFrame:
 		self.conf = conf
 		
 		# Entries for basic Configuration attributes
-		self.target = Gtk.Entry()
-		self.target.set_text(self.conf.target_dir)
 		self.pattern = Gtk.Entry()
-		self.pattern.set_text(self.conf.name_pattern)
+		self.pattern.set_text(self.conf.target_pattern)
 
 		# create tool bar and buttons
 		header = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-		header.pack_start(Gtk.Label(label="Target Dir"), False, False, 10)
-		header.pack_start(self.target, True, True, 0)
-		header.pack_start(Gtk.Label(label="Pattern"), False, False, 10)
+		header.pack_start(Gtk.Label(label="Target Pattern"), False, False, 10)
 		header.pack_start(self.pattern, True, True, 0)
 		header.pack_end(create_button("document-save", self.do_backup, "Create Backup of Selected Directories"), False, False, 0)
 		header.pack_end(create_button("view-refresh", self.do_refresh, "Refresh Include State"), False, False, 0)
@@ -74,19 +71,23 @@ class BackupFrame:
 	def update_conf(self, check=False):
 		""" Update Configuration from Entries and Directories Table.
 		"""
-		self.conf.target_dir = self.target.get_text()
-		self.conf.name_pattern = self.pattern.get_text()
-		self.conf.directories = [backup_model.Directory(*vals) for vals in self.store]
+		self.conf.target_pattern = self.pattern.get_text()
+		def to_directory(values):
+			values[2] = values.pop() # replace date string with timestamp
+			return backup_model.Directory(*values)
+		self.conf.directories = [to_directory(list(vals)) for vals in self.store]
 		if check:
-			invalid = [d.path for d in self.conf.directories if not backup_core.check_directory(d)]
-			show_warning(self.window, "Not a directory", "\n".join(invalid))
+			try:
+				self.conf.check()
+			except Exception as e:
+				show_warning(self.window, "Validation Error", str(e))
 		
 	def update_table(self):	
 		"""Update table view from configuration, e.g. after updating the dates.
 		"""
 		self.store.clear()
 		for d in self.conf.directories:
-			vals = [d.path, d.archive_type, d.last_backup, d.last_changed, d.include]
+			vals = [d.path, d.archive_type, backup_core.get_date(d.last_backup), d.include, d.incremental, d.last_backup]
 			self.store.append(vals)
 
 	def do_add(self, widget):
@@ -96,8 +97,9 @@ class BackupFrame:
 			parent=self.window, action=Gtk.FileChooserAction.SELECT_FOLDER)
 		dialog.add_buttons(Gtk.STOCK_CANCEL, False, Gtk.STOCK_OK, True)
 		if dialog.run() and dialog.get_filename():
-			vals = [dialog.get_filename(), "zip", None, None, False]
-			self.store.append(vals)
+			self.update_conf()
+			self.conf.directories.append(backup_model.Directory(dialog.get_filename(), "zip"))
+			self.update_table()
 		dialog.destroy()
 	
 	def do_remove(self, widget):
@@ -106,12 +108,13 @@ class BackupFrame:
 		_, it = self.select.get_selected()
 		if it is not None and ask_dialog(self.window, "Remove Directory?"):
 			self.store.remove(it)
+			self.update_conf()
 			
 	def do_refresh(self, widget):
 		""" Calculate include status from last-backup and last-changed
 		"""
 		self.update_conf(True)
-		backup_core.calculate_includes(self.conf)
+		self.conf.update_includes()
 		self.update_table()
 
 	def do_backup(self, widget):
@@ -134,17 +137,15 @@ class BackupFrame:
 		""" Create list model and filter model and populate with Directories,
 		then create the actual Tree View for showing and editing those values.
 		"""
-		self.store = Gtk.ListStore(str, str, str, str, bool)
+		self.store = Gtk.ListStore(str, str, str, bool, bool, float)
 		self.update_table()
 
 		self.table = Gtk.TreeView.new_with_model(self.store)
 		self.select = self.table.get_selection()
 		
-		for i, att in enumerate(["Path", "Type", "Last Backup", "Last Change", "Include?"]):
-			renderer = Gtk.CellRendererCombo()  if i == 1 else \
-			           Gtk.CellRendererToggle() if i == 4 else \
-			           Gtk.CellRendererText()
+		for i, att in enumerate(["Path", "Type", "Last Backup", "Incl.?", "Incr.?"]):
 			if i == 1:
+				renderer = Gtk.CellRendererCombo()
 				type_list = Gtk.ListStore(str)
 				for x in backup_core.KNOWN_TYPES:
 					type_list.append([x])
@@ -154,14 +155,16 @@ class BackupFrame:
 				renderer.set_property("text-column", 0)
 				renderer.set_property("editable", True)
 				renderer.connect("edited", edit_func)
-				
-			if i == 4:
+			elif i >= 3:
+				renderer = Gtk.CellRendererToggle()
 				def toggle_func(widget, path, i=i):
 					self.store[path][i] ^= True
 				renderer.set_property("activatable", True)
 				renderer.connect("toggled", toggle_func)
+			else:
+				renderer = Gtk.CellRendererText()
 				
-			column = Gtk.TreeViewColumn(att, renderer, active=i) if i == 4 else \
+			column = Gtk.TreeViewColumn(att, renderer, active=i) if i >= 3 else \
 			         Gtk.TreeViewColumn(att, renderer, text=i)
 			column.set_sort_column_id(i)
 			column.set_expand(i == 0)

@@ -116,7 +116,9 @@ def get_date(timestamp=None, add_time=False) -> str:
 	"""Get uniformly formatted current date.
 	"""
 	pattern = "%Y-%m-%d %H:%M:%S" if add_time else "%Y-%m-%d"
-	return (dt.fromtimestamp(timestamp) if timestamp else dt.now()).strftime(pattern)
+	return (dt.now().strftime(pattern) if timestamp is None else
+	        "never" if timestamp < 0 else
+	        dt.fromtimestamp(timestamp).strftime(pattern))
 
 
 def norm(dirname: str) -> str:

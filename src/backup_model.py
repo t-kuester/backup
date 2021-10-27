@@ -26,7 +26,7 @@ class Directory:
 	
 	path: str
 	archive_type: str
-	last_backup: float = 0.0
+	last_backup: float = -1.0
 	include: bool = False
 	incremental: bool = False
 	

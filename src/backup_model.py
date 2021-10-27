@@ -78,6 +78,7 @@ def load_from_json(json_string: str) -> Configuration:
 	config = json.loads(json_string)
 	config["directories"] = [Directory(**d) for d in config["directories"]]
 	return Configuration(**config)
+
 	
 def write_to_json(conf: Configuration) -> str:
 	"""Store backup configuration in JSON file.

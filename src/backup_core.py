@@ -54,7 +54,6 @@ def backup_directory(conf: Configuration, directory: Directory):
 	tgt_parent, _ = os.path.split(target_file)
 	os.makedirs(tgt_parent, exist_ok=True)
 	
-	# create archive file
 	archive_actions = {
 		TYPE_ZIP: create_zip,
 		TYPE_TAR: create_tar

@@ -204,12 +204,3 @@ def show_warning(parent, title, message):
 	dialog.run()
 	dialog.destroy()
 	
-
-def main():
-	with config.open_config() as conf:
-		BackupFrame(conf)
-		Gtk.main()
-
-
-if __name__ == "__main__":
-	main()

@@ -127,18 +127,3 @@ def norm(dirname: str) -> str:
 	return dirname.replace(".", "_")
 
 
-def main():
-	"""This method is executed when started from command line.
-	- load config
-	- check for last changes in directory
-	- perform backup
-	- save updated config
-	"""
-	import config
-	with config.open_config() as conf:
-		calculate_includes(conf)
-		perform_backup(conf)
-	
-	
-if __name__ == "__main__":
-	main()

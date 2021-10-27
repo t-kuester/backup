@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # -*- coding: utf8 -*-
 
 """Data model for simple Backup tool.
@@ -9,36 +8,64 @@ model to JSON files.
 """
 
 import json
+import os
+import re
+
+from dataclasses import dataclass
+from typing import Iterable, List
 
 
+VALID_PLACEHOLDERS = ["{date}", "{datetime}", "{parent}", "{dirname}", "{inc}"]
+REQUIRED_PLACEHOLDERS = ["{dirname}"]
+
+
+@dataclass
 class Directory:
 	"""Class representing a single directory.
 	"""
 	
-	def __init__(self, path, archive_type, last_backup=None, last_changed=None, include=False):
-		self.path = path
-		self.archive_type = archive_type
-		self.last_backup = last_backup
-		self.last_changed = last_changed
-		self.include = include
+	path: str
+	archive_type: str
+	last_backup: float = 0.0
+	include: bool = False
+	incremental: bool = False
+	
+	def check_path(self) -> bool:
+		return os.path.isdir(self.path)
+	
+	def iter_files(self) -> Iterable[str]:
+		return (os.path.join(d, f) for d, _, fs in os.walk(self.path) for f in fs)
+	
+	def iter_modified(self) -> Iterable[str]:
+		return (f for f in self.iter_files() if os.path.getmtime(f) > self.last_backup)
 		
-	def __repr__(self):
-		return "Directory(%r, %r, %r, %r, %r)" % (self.path, self.archive_type, 
-				self.last_backup, self.last_changed, self.include)
-				
+	def update_include(self):
+		self.include = any(self.iter_modified())
+	
 
+@dataclass
 class Configuration:
 	"""Class representing the entire configuration for the backup tool.
 	"""
 	
-	def __init__(self, target_dir, name_pattern, directories=None):
-		self.target_dir = target_dir
-		self.name_pattern = name_pattern
-		self.directories = directories or []
-		
-	def __repr__(self):
-		return "Configuration(%r, %r, %r)" % (self.target_dir, 
-				self.name_pattern, self.directories)
+	target_pattern: str
+	directories: List[Directory]
+	
+	def check(self):
+		placeholders = re.findall(r"\{.*?\}", self.target_pattern)
+		invalid = [p for p in placeholders if p not in VALID_PLACEHOLDERS]
+		if invalid:
+			raise Exception(f"Invalid Placeholders: {invalid}")
+		missing = [p for p in REQUIRED_PLACEHOLDERS if p not in placeholders]
+		if missing:
+			raise Exception(f"Missing Required Placeholders: {missing}")
+		for d in self.directories:
+			if not d.check_path():
+				raise Exception(f"{d.path} is not a valid directory")
+	
+	def update_includes(self):
+		for d in self.directories:
+			d.include = d.check_path() and any(d.iter_modified())
 
 
 def load_from_json(json_string: str) -> Configuration:
@@ -48,31 +75,10 @@ def load_from_json(json_string: str) -> Configuration:
 	config["directories"] = [Directory(**d) for d in config["directories"]]
 	return Configuration(**config)
 	
-	
-def write_to_json(configuration: Configuration) -> str:
+def write_to_json(conf: Configuration) -> str:
 	"""Store backup configuration in JSON file.
 	"""
-	config = dict(configuration.__dict__)
+	config = dict(conf.__dict__)
 	config["directories"] = [d.__dict__ for d in config["directories"]]
 	return json.dumps(config, indent=4)
 
-
-# TESTING
-
-def test():
-	"""Just for testing basic creation and JSON serialization.
-	"""
-	conf = Configuration("target-dir", "name-pattern")
-	conf.directories.extend([Directory("/path/to/foo", "zip", 1, 2), 
-	                         Directory("/path/to/bar", "tar.gz", 3, 4), 
-			                 Directory("/path/to/blub", "tar", 5, 6)])
-	string = write_to_json(conf)
-	conf2 = load_from_json(string)
-	print(conf)
-	print(string)
-	assert str(conf) == str(conf2)
-	assert string == write_to_json(conf2)
-
-
-if __name__=="__main__":
-	test()

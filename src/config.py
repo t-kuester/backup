@@ -18,8 +18,7 @@ USER_DIR = os.environ["HOME"]
 CONFIG_PATH = os.path.join(USER_DIR, ".config", "t-kuester")
 CONFIG_FILE = os.path.join(CONFIG_PATH, "backup.json")
 
-DEFAULT_TARGET_DIR = os.path.join(USER_DIR, "backup_{date}")
-DEFAULT_NAME_PATTERN = "{parent}/{dirname} {date}"
+DEFAULT_TARGET_PATTERN = "~/BACKUP/{parent}/{dirname}{inc} {date}"
 DEFAULT_ARCHIVE_TYPE = "zip"
 
 
@@ -31,9 +30,10 @@ def open_config(json_location=CONFIG_FILE):
 	except Exception as e:
 		parent, _ = os.path.split(json_location)
 		os.makedirs(parent, exist_ok=True)
-		conf = Configuration(DEFAULT_TARGET_DIR, DEFAULT_NAME_PATTERN, [])
+		conf = Configuration(DEFAULT_TARGET_PATTERN, [])
 
 	yield conf
 	
 	with open(json_location, "w") as f:
 		f.write(write_to_json(conf))
+		f.write("\n")

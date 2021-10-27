@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
 # -*- coding: utf8 -*-
 
-"""User interface for simple Backup tool.
+"""
+User interface for simple Backup tool.
 by Tobias Küster, 2020
 
 Second try, based on the UI for the Password Manager, using GTK, too, and a

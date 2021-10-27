@@ -1,6 +1,8 @@
+# -*- coding: utf8 -*-
+
 """
 Starter file for Simple Backup Tool,
-Tobias Küster, 2021
+by Tobias Küster, 2021
 
 Show either the graphical UI (the default) or run the backup tool in command-line mode,
 asking the user which of the previously defined directories should be backed up, or

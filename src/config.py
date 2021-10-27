@@ -1,6 +1,7 @@
 # -*- coding: utf8 -*-
 
-"""Global configuration for simple Backup tool.
+"""
+Global configuration for simple Backup tool.
 by Tobias Küster, 2016
 
 This file contains some variables for global configuration, such as some
@@ -24,6 +25,9 @@ DEFAULT_ARCHIVE_TYPE = "zip"
 
 @contextmanager
 def open_config(json_location=CONFIG_FILE):
+	"""Open configuration file at given location, or create a new default configuration
+	in this place if none exists; then save again to that same file after the 'with' block.
+	"""
 	try:
 		with open(json_location, "r") as f:
 			conf = load_from_json(f.read())

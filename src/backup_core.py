@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
 # -*- coding: utf8 -*-
 
-"""Core Components for simple Backup tool.
+"""
+Core Components for simple Backup tool.
 by Tobias Küster, 2016
 
 This module contains the algorithms and the logic for actually creating the
@@ -83,9 +83,9 @@ def create_tar(directory: Directory, target_file: str):
 # HElPER FUNCTIONS
 
 def get_target_file(conf: Configuration, directory: Directory) -> str:
-	"""Substitute placeholders and normalize file name, i.e. replace leading '.' (hidden files)
-	with '_', but only in directory name, not in target path, replace '~' with home dir, and
-	replace multiple '/' with single '/'.
+	"""Substitute placeholders and normalize file name, i.e. replace leading '.'
+	(hidden files) with '_', but only in directory name, not in target path,
+	replace '~' with home dir, and replace multiple '/' with single '/'.
 	"""
 	src_parent, src_dir = os.path.split(re.sub(r"(?<=/)\.", "_", directory.path))
 	placeholders = {

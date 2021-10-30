@@ -15,10 +15,9 @@ similar layout.
 
 import gi
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
+from gi.repository import Gtk, GLib
 
 import threading
-import time
 
 import backup_model, backup_core, config
 
@@ -80,7 +79,7 @@ class BackupFrame:
 			try:
 				self.conf.check()
 			except Exception as e:
-				show_warning(self.window, "Validation Error", str(e))
+				show_warning(self.window, "Warning", str(e))
 		
 	def update_table(self):	
 		"""Update table view from configuration, e.g. after updating the dates.
@@ -118,20 +117,28 @@ class BackupFrame:
 		self.update_table()
 
 	def do_backup(self, widget):
-		""" Create backup of the selected Directories.
+		""" Create backup of the selected Directories. This uses two concurrent
+		processes: one for performing the actual backup, and one for updating
+		the UI (the latter can not be done from the backup-thread).
 		"""
 		self.update_conf(True)
 		if ask_dialog(self.window, "Create Backup?"):
+			n, done = len(self.conf.directories) + 1, []
+			
 			def worker():
-				n = len(self.conf.directories)
 				for i, msg in enumerate(backup_core.perform_backup_iter(self.conf)):
-					self.progress.set_text(msg)
-					self.progress.set_fraction(i / n)
-					time.sleep(0.5)
-				self.update_table()
-			t = threading.Thread(target=worker)
-			t.daemon = True
-			t.start()
+					done.append(msg)
+
+			def update_progress():
+				if done:
+					self.progress.set_text(done[-1])
+					self.progress.set_fraction(len(done) / n)
+				if len(done) == n:
+					self.update_table()
+				return len(done) < n
+			
+			GLib.timeout_add(100, update_progress)
+			threading.Thread(target=worker).start()
 	
 	def create_table(self):
 		""" Create list model and filter model and populate with Directories,

@@ -1,25 +1,24 @@
-IDEAS
-- support backup on removeable & remote drives
-- do I really have to os.walk the files in the directories,
-  or can I compress the directory as a whole?
-- add folders by drag-and-drop
-- show size?
-- only date in table, time only on tooltip
-- update readme, screenshot, docstrings
-- disable buttons while backup is underway
-- use "format" again in pattern resolution and allow custom date/time format
-- option: strip home dir
+TODO
+- disable buttons (and table?) while backup is underway
+  - and/or deep-copy Config object to prevent modification
+  - or use threading.Lock?
 - archive files should not include full paths
-
-BUGS
-- continued load and hanging after backup
-- thread hangs on second backup?
-- UI not properly refreshed?
-- no updates written when killed in between
+- update readme, screenshot, docstrings
 
 TEST
 - incremental backup
-- zip file size
-- using async instead of threading?
 - kill ui before update is complete
 - proper sync between model and UI in different situations
+
+NICE TO HAVE
+- option: strip home dir
+- support backup on removeable & remote drives
+- add folders by drag-and-drop
+- show size?
+- use "format" again in pattern resolution and allow custom date/time format
+- individual progress bars for each directory (in the table)
+
+REFACTORING
+- do I really have to os.walk the files in the directories,
+  or can I compress the directory as a whole?
+- merge config into model, proper module structure

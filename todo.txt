@@ -1,7 +1,4 @@
 TODO
-- disable buttons (and table?) while backup is underway
-  - and/or deep-copy Config object to prevent modification
-  - or use threading.Lock?
 - archive files should not include full paths
 - update readme, screenshot, docstrings
 
@@ -11,10 +8,9 @@ TEST
 - proper sync between model and UI in different situations
 
 NICE TO HAVE
-- option: strip home dir
+- warning before overwriting files?
 - support backup on removeable & remote drives
 - add folders by drag-and-drop
-- show size?
 - use "format" again in pattern resolution and allow custom date/time format
 - individual progress bars for each directory (in the table)
 

@@ -53,6 +53,8 @@ class BackupFrame:
 		self.progress.set_show_text(True)
 		self.progress.set_text("")
 		
+		self.widgets = [self.table, *header.get_children()]
+		
 		# main vertical "box" for all the contents of the window
 		body = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 		body.pack_start(header, False, False, 0)
@@ -133,9 +135,12 @@ class BackupFrame:
 				if done:
 					self.progress.set_text(done[-1])
 					self.progress.set_fraction(len(done) / n)
-				if len(done) == n:
+				all_done = len(done) >= n
+				if all_done:
 					self.update_table()
-				return len(done) < n
+				for widget in self.widgets:
+					widget.set_sensitive(all_done)
+				return not all_done
 			
 			GLib.timeout_add(100, update_progress)
 			threading.Thread(target=worker).start()

@@ -12,7 +12,6 @@ when a file was changed and whether a new backup is due.
 
 import os
 import re
-import time
 from datetime import datetime as dt
 from typing import Iterable
 from tarfile import TarFile
@@ -39,7 +38,7 @@ def perform_backup_iter(conf: Configuration) -> Iterable[str]:
 		if directory.include and any(directory.iter_include()):
 			yield f"Backing up {directory.path}"
 			backup_directory(conf, directory)
-			directory.last_backup = time.time()
+			directory.last_backup = dt.now().timestamp()
 		else:
 			yield f"Skipping {directory.path}"
 	yield "Done"

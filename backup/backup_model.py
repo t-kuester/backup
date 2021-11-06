@@ -25,42 +25,42 @@ REQUIRED_PLACEHOLDERS = [P_DIRN]
 class Directory:
 	"""Class representing a single directory.
 	"""
-	
+
 	path: str
 	archive_type: str
 	last_backup: float = -1.0
 	include: bool = False
 	incremental: bool = False
-	
+
 	def check_path(self) -> bool:
 		"""Check whether the given path is a valid directory."""
 		return os.path.isdir(self.path)
-	
+
 	def iter_files(self) -> Iterable[str]:
 		"""Iterate all (nested) fiels in the directory, yielding full absolute paths."""
 		return (os.path.join(d, f) for d, _, fs in os.walk(self.path) for f in fs)
-	
+
 	def iter_modified(self) -> Iterable[str]:
 		"""Iterate modified files only."""
 		return (f for f in self.iter_files() if os.path.getmtime(f) > self.last_backup)
-	
+
 	def iter_include(self) -> Iterable[str]:
 		"""Iterate all or modified fiels, depending on whether it is a incremental backup."""
 		return self.iter_modified() if self.incremental else self.iter_files()
-		
+
 	def update_include(self):
 		"""Update this Directory's 'include' flag based on last modification time."""
 		self.include = any(self.iter_modified())
-	
+
 
 @dataclass
 class Configuration:
 	"""Class representing the entire configuration for the backup tool.
 	"""
-	
+
 	target_pattern: str
 	directories: List[Directory]
-	
+
 	def check(self):
 		"""Check whether target_pattern is valid and all Directories point to actual
 		directories; raise exceptions if any of this does not apply.
@@ -72,14 +72,14 @@ class Configuration:
 		missing = [p for p in REQUIRED_PLACEHOLDERS if p not in placeholders]
 		if missing:
 			raise Exception(f"Missing Required Placeholders: {missing}")
-		for d in self.directories:
-			if not d.check_path():
-				raise Exception(f"{d.path} is not a valid directory")
-	
+		for directory in self.directories:
+			if not directory.check_path():
+				raise Exception(f"{directory.path} is not a valid directory")
+
 	def update_includes(self):
 		"""Update 'include' flag of all contained directories."""
-		for d in self.directories:
-			d.include = d.check_path() and any(d.iter_modified())
+		for directory in self.directories:
+			directory.include = directory.check_path() and any(directory.iter_modified())
 
 
 def load_from_json(json_string: str) -> Configuration:
@@ -89,11 +89,10 @@ def load_from_json(json_string: str) -> Configuration:
 	config["directories"] = [Directory(**d) for d in config["directories"]]
 	return Configuration(**config)
 
-	
+
 def write_to_json(conf: Configuration) -> str:
 	"""Store backup configuration in JSON file.
 	"""
 	config = dict(conf.__dict__)
 	config["directories"] = [d.__dict__ for d in config["directories"]]
 	return json.dumps(config, indent=4)
-

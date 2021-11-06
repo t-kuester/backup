@@ -49,17 +49,17 @@ def backup_directory(conf: Configuration, directory: Directory):
 	to the given target directory.
 	"""
 	target_file = get_target_file(conf, directory)
-	
+
 	tgt_parent, _ = os.path.split(target_file)
 	os.makedirs(tgt_parent, exist_ok=True)
-	
+
 	archive_actions = {
 		TYPE_ZIP: create_zip,
 		TYPE_TAR: create_tar
 	}
 	function = archive_actions[directory.archive_type]
-	archive_file = function(directory, target_file)
-	
+	function(directory, target_file)
+
 
 def create_zip(directory: Directory, target_file: str):
 	"""Create zip file using given filename containing the directory to_compress
@@ -68,8 +68,8 @@ def create_zip(directory: Directory, target_file: str):
 	with ZipFile(target_file, mode="w", compression=ZIP_DEFLATED, compresslevel=5) as zip_file:
 		for filepath in directory.iter_include():
 			zip_file.write(filepath)
-	
-	
+
+
 def create_tar(directory: Directory, target_file: str):
 	"""Create tar file using given filename containing the directory to_compress
 	and all of its files.
@@ -108,4 +108,3 @@ def get_date(timestamp=None, add_time=False) -> str:
 	return (dt.now().strftime(pattern) if timestamp is None else
 	        "never" if timestamp < 0 else
 	        dt.fromtimestamp(timestamp).strftime(pattern))
-

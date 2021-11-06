@@ -32,7 +32,7 @@ def run_commandline(interactive=True):
 
 		for msg in backup_core.perform_backup_iter(conf):
 			print(msg)
-		
+
 
 def run_graphical():
 	"""Run with the graphical GTK UI (default).
@@ -40,8 +40,8 @@ def run_graphical():
 	with config.open_config() as conf:
 		backup_gtk.BackupFrame(conf)
 		backup_gtk.Gtk.main()
-	
-	
+
+
 def main():
 	"""Set up command line arguments parser and chose which way to use the program.
 	"""

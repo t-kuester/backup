@@ -1,6 +1,6 @@
 TODO
 - archive files should not include full paths
-- update readme, screenshot, docstrings
+- extend unit tests
 
 TEST
 - incremental backup

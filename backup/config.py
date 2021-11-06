@@ -31,13 +31,13 @@ def open_config(json_location=CONFIG_FILE):
 	try:
 		with open(json_location, "r") as f:
 			conf = load_from_json(f.read())
-	except Exception as e:
+	except FileNotFoundError:
 		parent, _ = os.path.split(json_location)
 		os.makedirs(parent, exist_ok=True)
 		conf = Configuration(DEFAULT_TARGET_PATTERN, [])
 
 	yield conf
-	
+
 	with open(json_location, "w") as f:
 		f.write(write_to_json(conf))
 		f.write("\n")

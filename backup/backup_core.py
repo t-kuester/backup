@@ -58,24 +58,28 @@ def backup_directory(conf: Configuration, directory: Directory):
 		TYPE_TAR: create_tar
 	}
 	function = archive_actions[directory.archive_type]
-	function(directory, target_file)
+
+	cwd = os.path.abspath(".")
+	os.chdir(directory.parent())
+	function(directory.to_relative(directory.iter_include()), target_file)
+	os.chdir(cwd)
 
 
-def create_zip(directory: Directory, target_file: str):
+def create_zip(filepaths: Iterable[str], target_file: str):
 	"""Create zip file using given filename containing the directory to_compress
 	and all of its files.
 	"""
 	with ZipFile(target_file, mode="w", compression=ZIP_DEFLATED, compresslevel=5) as zip_file:
-		for filepath in directory.iter_include():
+		for filepath in filepaths:
 			zip_file.write(filepath)
 
 
-def create_tar(directory: Directory, target_file: str):
+def create_tar(filepaths: Iterable[str], target_file: str):
 	"""Create tar file using given filename containing the directory to_compress
 	and all of its files.
 	"""
 	with TarFile(target_file, mode="w") as tar_file:
-		for filepath in directory.iter_include():
+		for filepath in filepaths:
 			tar_file.add(filepath)
 
 

@@ -51,6 +51,15 @@ class Directory:
 	def update_include(self):
 		"""Update this Directory's 'include' flag based on last modification time."""
 		self.include = any(self.iter_modified())
+		
+	def to_relative(self, paths: Iterable[str]) -> Iterable[str]:
+		"""Transfort paths to relative paths."""
+		par = self.parent()
+		return (os.path.relpath(p, par) for p in paths)
+	
+	def parent(self):
+		"""Get parent directory."""
+		return os.path.join(self.path, os.path.pardir)
 
 
 @dataclass

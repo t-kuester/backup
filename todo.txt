@@ -1,5 +1,4 @@
 TODO
-- archive files should not include full paths
 - extend unit tests
 
 TEST

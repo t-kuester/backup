@@ -55,7 +55,7 @@ class Directory:
 	def to_relative(self, paths: Iterable[str]) -> Iterable[str]:
 		"""Transfort paths to relative paths."""
 		par = self.parent()
-		return (os.path.relpath(p, par) for p in paths)
+		return (os.path.relpath(p, par) for p in paths if os.path.isfile(p))  # isfile to skip "pipe" files
 	
 	def parent(self):
 		"""Get parent directory."""

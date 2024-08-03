@@ -1,5 +1,7 @@
 TODO
 - extend unit tests
+- inc suffix only if not the first incremental backup
+- allow to exclude subfolders?
 
 TEST
 - incremental backup

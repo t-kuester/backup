@@ -150,6 +150,7 @@ class BackupFrame:
 		""" Create list model and filter model and populate with Directories,
 		then create the actual Tree View for showing and editing those values.
 		"""
+        # XXX why float in last place???
 		self.store = Gtk.ListStore(str, str, str, str, bool, bool, float)
 		self.update_table()
 

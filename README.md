@@ -50,7 +50,7 @@ It allows for different placeholders:
 * `{datetime}`: the current date and time, e.g. `2020-11-07 19:58:41`
 * `{parent}`: the full absolute path of the parent of the directory to be backed up
 * `{dirname}`: the name of the actual directory to be backed up
-* `{inc}`: can be used to add a suffic `_inc` to incremental backup archives
+* `{inc}`: can be used to add a suffix `_inc` to incremental backup archives
 
 The `directories` list shows the individual directories to be backed up. Their
 defining feature, of course, is the `path`. Besides that, you can chose whether

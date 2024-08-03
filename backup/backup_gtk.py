@@ -19,7 +19,7 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, GLib
 
-from backup_core import get_date, perform_backup_iter, KNOWN_TYPES
+from backup_core import get_date, get_size, perform_backup_iter, KNOWN_TYPES
 from backup_model import Directory
 
 
@@ -75,7 +75,7 @@ class BackupFrame:
 		"""
 		self.conf.target_pattern = self.pattern.get_text()
 		def to_directory(values):
-			values[2] = values.pop() # replace date string with timestamp
+			values[3] = values.pop() # replace date string with timestamp
 			return Directory(*values)
 		self.conf.directories = [to_directory(list(vals)) for vals in self.store]
 		if check:
@@ -89,7 +89,7 @@ class BackupFrame:
 		"""
 		self.store.clear()
 		for d in self.conf.directories:
-			vals = [d.path, d.archive_type, get_date(d.last_backup), d.include, d.incremental, d.last_backup]
+			vals = [d.path, d.archive_type, get_size(d), get_date(d.last_backup), d.include, d.incremental, d.last_backup]
 			self.store.append(vals)
 
 	def do_add(self, _widget):
@@ -150,14 +150,14 @@ class BackupFrame:
 		""" Create list model and filter model and populate with Directories,
 		then create the actual Tree View for showing and editing those values.
 		"""
-		self.store = Gtk.ListStore(str, str, str, bool, bool, float)
+		self.store = Gtk.ListStore(str, str, str, str, bool, bool, float)
 		self.update_table()
 
 		self.table = Gtk.TreeView.new_with_model(self.store)
 		self.select = self.table.get_selection()
 
-		for i, att in enumerate(["Path", "Type", "Last Backup", "Incl.?", "Incr.?"]):
-			if i == 1:
+		for i, att in enumerate(["Path", "Type", "Size", "Last Backup", "Incl.?", "Incr.?"]):
+			if i == 1:  # type
 				renderer = Gtk.CellRendererCombo()
 				type_list = Gtk.ListStore(str)
 				for x in KNOWN_TYPES:
@@ -168,16 +168,16 @@ class BackupFrame:
 				renderer.set_property("text-column", 0)
 				renderer.set_property("editable", True)
 				renderer.connect("edited", edit_func)
-			elif i >= 3:
+			elif i in (4, 5):  # incl?, incr?
 				renderer = Gtk.CellRendererToggle()
 				def toggle_func(_widget, path, i=i):
 					self.store[path][i] ^= True
 				renderer.set_property("activatable", True)
 				renderer.connect("toggled", toggle_func)
-			else:
+			else:  # path, size, last backup
 				renderer = Gtk.CellRendererText()
 
-			column = Gtk.TreeViewColumn(att, renderer, active=i) if i >= 3 else \
+			column = Gtk.TreeViewColumn(att, renderer, active=i) if i in (4, 5) else \
 			         Gtk.TreeViewColumn(att, renderer, text=i)
 			column.set_sort_column_id(i)
 			column.set_expand(i == 0)

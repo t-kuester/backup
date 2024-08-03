@@ -105,6 +105,14 @@ def get_target_file(conf: Configuration, directory: Directory) -> str:
 	return '.'.join((target_file, directory.archive_type))
 
 
+def get_size(directory: Directory) -> str:
+    """Get size of files in directory as human-readable string."""
+    size = sum(os.path.getsize(f) for f in directory.iter_include())
+    p = max(i for i in range(5) if 1024**i <= size)
+    ext = ("B", "KB", "MB", "GB", "TB")[p]
+    return f"{size / 1024**p:.1f} {ext}"
+
+
 def get_date(timestamp=None, add_time=False) -> str:
 	"""Get uniformly formatted current date.
 	"""
